@@ -26,7 +26,7 @@ Planner (feature B) ─→ Executor (B) ─→ Verifier (B)  ─┘
 
 | Subtask Type | Agent | Max Parallel |
 |-------------|-------|-------------|
-| Architecture/planning | planner | 3 |
+| Architecture/planning | spec-writer | 3 |
 | Implementation | executor | 5 |
 | Code review | code-reviewer | 3 |
 | Test generation | test-engineer | 3 |

@@ -1,5 +1,5 @@
 ---
-name: planner
+name: spec-writer
 description: Analyze requirements, explore codebase, and produce a contract specification. Use PROACTIVELY when a feature request needs structured specification before coding.
 model: inherit
 tools: [Read, Grep, Glob, Bash, Write, Edit]

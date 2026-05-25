@@ -22,8 +22,8 @@ If the feature requires an architectural decision:
 - ADR is written to `docs/adr/NNNN-title.md`
 
 ### Phase 1: Contract
-Delegate to the **planner** subagent:
-- Launch via Task tool with `subagent_type: "planner"`
+Delegate to the **spec-writer** subagent:
+- Launch via Task tool with `subagent_type: "spec-writer"`
 - Provide user request + any ADR context
 - Read the resulting `docs/specs/<feature>/README.md`
 - Present contract to user for approval

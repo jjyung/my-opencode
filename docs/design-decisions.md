@@ -67,7 +67,7 @@ model: sonnet # 或 opus, haiku, inherit
 // opencode.json 覆寫
 {
   "agents": {
-    "planner": { "model": "anthropic/claude-opus-4-5" }
+    "spec-writer": { "model": "anthropic/claude-opus-4-5" }
   }
 }
 ```
@@ -83,7 +83,7 @@ model: sonnet # 或 opus, haiku, inherit
 ```json
 {
   "agents": {
-    "planner": {
+    "spec-writer": {
       "tools": { "read": true, "bash": true, "write": true, "edit": true }
     }
   }
@@ -94,7 +94,7 @@ model: sonnet # 或 opus, haiku, inherit
 
 | Agent | 寫入範圍 | 說明 |
 |-------|----------|------|
-| planner | `docs/specs/` | 寫 contract（原為唯讀，因需產生 contract 文件而開放寫入） |
+| spec-writer | `docs/specs/` | 寫 contract |
 | executor | 任意 | 寫程式碼 |
 | architect | `docs/adr/` | 寫 ADR |
 | verifier | 不寫入 | 唯讀 + bash 執行測試 |

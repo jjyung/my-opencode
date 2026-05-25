@@ -96,9 +96,8 @@ Response: { field: type }
 References: ADR-001, ADR-003
 ```
 
-### Agent: planner
+### Agent: spec-writer
 - Tools: Read, Grep, Glob, Bash, Write, Edit
-- Read-only for codebase exploration, write for contract documents
 - Writes to `docs/specs/<feature>/`, NOT to `.handoffs/`
 
 See `references/contract-phase.md` for detailed contract workflow.

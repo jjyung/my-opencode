@@ -55,13 +55,13 @@ Launch independent subtasks concurrently using the Task tool with appropriate `s
 
 ```markdown
 Task 1: architect (ADR for infrastructure choice)
-Task 2: planner (contract for API design)
+Task 2: spec-writer (contract for API design)
 (These are independent — launch in parallel)
 ```
 
 Dependent subtasks run sequentially:
 ```
-Task 1: architect (ADR) → Task 2: planner (contract) → Task 3: executor (implement)
+Task 1: architect (ADR) → Task 2: spec-writer (contract) → Task 3: executor (implement)
 ```
 
 ### Step 4: Collection

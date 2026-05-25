@@ -82,7 +82,7 @@ my-opencode/
 │   └── docs-gen/             # [done] 文件生成：註解、API、README、ADR
 ├── agents/                  # 組合多個 skill 的完整 agent
 │   ├── architect.md         # [new] 架構師 agent（ADR 產生）
-│   ├── planner.md           # 規格 agent（合約文件 → docs/specs/）
+│   ├── spec-writer.md       # 規格 agent（合約文件 → docs/specs/）
 │   ├── executor.md          # 實作 agent（讀寫）
 │   ├── verifier.md          # 驗證 agent（唯讀+Bash）
 │   ├── code-reviewer.md     # 程式碼審查 agent（唯讀）
@@ -114,7 +114,7 @@ my-opencode/
 - [x] docs/ 探索紀錄（6 份 notes + patterns.md + design-decisions.md）
 - [x] skill: adr（架構決策記錄，Michael Nygard 輕量格式）
 - [x] skill: dev-flow（開發流程，含 architecture → contract → code → verify）
-- [x] agents: planner, executor, verifier, fullstack-dev, code-reviewer, test-engineer, team-lead, architect
+- [x] agents: spec-writer, executor, verifier, fullstack-dev, code-reviewer, test-engineer, team-lead, architect
 - [x] skill: pr-review（PR 審查，含 5 維度分析 + 安全檢查表）
 - [x] skill: test-gen（測試生成，含框架偵測 + 多語言測試模式）
 - [x] skill: orchestrate（多 agent 編排）

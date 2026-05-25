@@ -1,0 +1,18 @@
+[submodule "ref/second-brain-skills"]
+	path = ref/second-brain-skills
+	url = https://github.com/coleam00/second-brain-skills
+[submodule "ref/claude-code-research"]
+	path = ref/claude-code-research
+	url = https://github.com/cablate/claude-code-research
+[submodule "ref/wshobson-agents"]
+	path = ref/wshobson-agents
+	url = https://github.com/wshobson/agents
+[submodule "ref/claude-skills"]
+	path = ref/claude-skills
+	url = https://github.com/alirezarezvani/claude-skills
+[submodule "ref/everything-claude-code"]
+	path = ref/everything-claude-code
+	url = https://github.com/affaan-m/everything-claude-code
+[submodule "ref/oh-my-claudecode"]
+	path = ref/oh-my-claudecode
+	url = https://github.com/Yeachan-Heo/oh-my-claudecode

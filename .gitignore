@@ -1,0 +1,5 @@
+# Dev-flow handoff files
+.handoffs/
+
+# OS files
+.DS_Store

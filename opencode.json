@@ -1,0 +1,148 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-5",
+  "small_model": "anthropic/claude-haiku-4-5",
+  "default_agent": "fullstack-dev",
+  "instructions": [
+    "skills/dev-flow/SKILL.md",
+    "skills/pr-review/SKILL.md",
+    "skills/test-gen/SKILL.md",
+    "skills/docs-gen/SKILL.md",
+    "skills/orchestrate/SKILL.md"
+  ],
+  "agent": {
+    "fullstack-dev": {
+      "description": "Primary development agent. Orchestrates plan → code → verify for feature implementation.",
+      "mode": "primary",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "{file:agents/fullstack-dev.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "changed-files": true
+      }
+    },
+    "planner": {
+      "description": "Analyze requirements and produce implementation plans. Read-only agent for architecture and design.",
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "{file:agents/planner.md}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "executor": {
+      "description": "Implement code changes following an approved plan. Full read/write access for coding.",
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "{file:agents/executor.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "verifier": {
+      "description": "Run lint, typecheck, tests, and build to verify code changes. Read-only + bash.",
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "{file:agents/verifier.md}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "code-reviewer": {
+      "description": "Systematic code review across correctness, security, quality, testing, and style dimensions.",
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "{file:agents/code-reviewer.md}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "test-engineer": {
+      "description": "Generate meaningful tests for source code — unit, integration, and E2E. Framework-aware.",
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "{file:agents/test-engineer.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "tech-writer": {
+      "description": "Generate and update project documentation — code comments, API docs, README, ADRs, and CHANGELOG.",
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "{file:agents/tech-writer.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "team-lead": {
+      "description": "Multi-agent orchestrator for complex tasks. Delegates to planner, executor, code-reviewer, test-engineer, verifier.",
+      "mode": "subagent",
+      "model": "anthropic/claude-sonnet-4-5",
+      "prompt": "{file:agents/team-lead.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    }
+  },
+  "command": {
+    "plan": {
+      "description": "Analyze and create an implementation plan for a feature or change",
+      "agent": "planner",
+      "subtask": true
+    },
+    "review": {
+      "description": "Review code changes across 5 dimensions (correctness, security, quality, testing, style)",
+      "agent": "code-reviewer",
+      "subtask": true
+    },
+    "test": {
+      "description": "Generate tests for source code — auto-detects framework and conventions",
+      "agent": "test-engineer",
+      "subtask": true
+    },
+    "docs": {
+      "description": "Generate or update documentation — code comments, README, API docs, ADRs",
+      "agent": "tech-writer",
+      "subtask": true
+    },
+    "orchestrate": {
+      "description": "Coordinate multiple agents for complex, multi-domain tasks",
+      "agent": "team-lead",
+      "subtask": true
+    },
+    "verify": {
+      "description": "Run lint, typecheck, tests, and build to verify changes",
+      "template": "Use the verifier agent to run the full verification suite on the current changes.\n\n$ARGUMENTS",
+      "agent": "verifier",
+      "subtask": true
+    }
+  },
+  "permission": {
+    "mcp_*": "ask"
+  }
+}

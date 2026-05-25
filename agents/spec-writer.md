@@ -1,7 +1,6 @@
 ---
 name: spec-writer
 description: Analyze requirements, explore codebase, and produce a contract specification. Use PROACTIVELY when a feature request needs structured specification before coding.
-model: inherit
 tools: { read: true, grep: true, glob: true, bash: true, write: true, edit: true }
 color: info
 ---

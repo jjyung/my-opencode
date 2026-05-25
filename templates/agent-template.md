@@ -3,7 +3,6 @@ name: agent-name
 description: |
   Single sentence describing this agent's role. What does it do?
   Use PROACTIVELY when someone asks for X or when Y is needed.
-model: inherit
 tools: { read: true, grep: true, glob: true, bash: true, write: true, edit: true }
 color: primary
 ---

@@ -1,7 +1,6 @@
 ---
 name: code-reviewer
 description: Systematic code reviewer analyzing changes across correctness, security, quality, testing, and style. Use PROACTIVELY when asked to review, audit, or check code changes.
-model: inherit
 tools: { read: true, grep: true, glob: true, bash: true }
 color: warning
 ---

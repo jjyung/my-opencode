@@ -14,8 +14,7 @@
     "fullstack-dev": {
       "description": "Primary development agent. Orchestrates contract-first ADR → contract → code → verify flow.",
       "mode": "primary",
-      "model": "inherit",
-      "prompt": "{file:agents/fullstack-dev.md}",
+            "prompt": "{file:agents/fullstack-dev.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -26,8 +25,7 @@
     "spec-writer": {
       "description": "Analyze requirements and produce contract specifications in docs/specs/. Writes persistent contracts for parallel development.",
       "mode": "subagent",
-      "model": "inherit",
-      "prompt": "{file:agents/spec-writer.md}",
+            "prompt": "{file:agents/spec-writer.md}",
       "tools": {
         "read": true,
         "bash": true,
@@ -38,8 +36,7 @@
     "executor": {
       "description": "Implement code changes following an approved contract. Full read/write access for coding.",
       "mode": "subagent",
-      "model": "inherit",
-      "prompt": "{file:agents/executor.md}",
+            "prompt": "{file:agents/executor.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -50,8 +47,7 @@
     "verifier": {
       "description": "Run lint, typecheck, tests, and build to verify code changes. Read-only + bash.",
       "mode": "subagent",
-      "model": "inherit",
-      "prompt": "{file:agents/verifier.md}",
+            "prompt": "{file:agents/verifier.md}",
       "tools": {
         "read": true,
         "bash": true,
@@ -62,8 +58,7 @@
     "code-reviewer": {
       "description": "Systematic code review across correctness, security, quality, testing, and style dimensions.",
       "mode": "subagent",
-      "model": "inherit",
-      "prompt": "{file:agents/code-reviewer.md}",
+            "prompt": "{file:agents/code-reviewer.md}",
       "tools": {
         "read": true,
         "bash": true,
@@ -74,8 +69,7 @@
     "test-engineer": {
       "description": "Generate meaningful tests for source code — unit, integration, and E2E. Framework-aware.",
       "mode": "subagent",
-      "model": "inherit",
-      "prompt": "{file:agents/test-engineer.md}",
+            "prompt": "{file:agents/test-engineer.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -86,8 +80,7 @@
     "tech-writer": {
       "description": "Generate and update project documentation — code comments, API docs, README, and CHANGELOG.",
       "mode": "subagent",
-      "model": "inherit",
-      "prompt": "{file:agents/tech-writer.md}",
+            "prompt": "{file:agents/tech-writer.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -98,8 +91,7 @@
     "team-lead": {
       "description": "Multi-agent orchestrator for complex tasks. Delegates to architect, spec-writer, executor, code-reviewer, test-engineer, verifier.",
       "mode": "subagent",
-      "model": "inherit",
-      "prompt": "{file:agents/team-lead.md}",
+            "prompt": "{file:agents/team-lead.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -110,8 +102,7 @@
     "architect": {
       "description": "Capture architecture decisions as ADR documents. Analyzes tradeoffs and records context.",
       "mode": "subagent",
-      "model": "inherit",
-      "prompt": "{file:agents/architect.md}",
+            "prompt": "{file:agents/architect.md}",
       "tools": {
         "read": true,
         "write": true,

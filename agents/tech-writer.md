@@ -1,7 +1,6 @@
 ---
 name: tech-writer
 description: Generate and update project documentation — code comments, API docs, README, and CHANGELOG. Use PROACTIVELY when asked to document code, write docs, or add comments. ADRs are handled by the architect agent.
-model: inherit
 tools: { read: true, write: true, edit: true, bash: true, grep: true, glob: true }
 color: info
 ---

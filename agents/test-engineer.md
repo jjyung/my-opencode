@@ -1,7 +1,6 @@
 ---
 name: test-engineer
 description: Generate meaningful tests for source code — unit, integration, and E2E. Use PROACTIVELY when asked to add tests, cover code, or increase test coverage.
-model: inherit
 tools: { read: true, write: true, edit: true, bash: true, grep: true, glob: true }
 color: success
 ---

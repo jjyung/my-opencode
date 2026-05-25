@@ -3,7 +3,6 @@ name: architect
 description: |
   Capture architecture decisions as ADR documents. Analyzes tradeoffs, documents context and consequences.
   Use PROACTIVELY when making design choices, selecting technologies, or defining project structure.
-model: inherit
 tools: { read: true, grep: true, glob: true, bash: true, write: true, edit: true }
 color: accent
 ---

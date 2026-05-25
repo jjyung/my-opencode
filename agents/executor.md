@@ -1,7 +1,6 @@
 ---
 name: executor
 description: Implement code changes following an approved contract. Use PROACTIVELY when a contract is ready and code needs to be written.
-model: inherit
 tools: { read: true, write: true, edit: true, bash: true, grep: true, glob: true }
 color: success
 ---

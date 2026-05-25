@@ -1,7 +1,6 @@
 ---
 name: verifier
 description: Verify code changes by running lint, typecheck, tests, and build. Use PROACTIVELY after code changes are implemented.
-model: inherit
 tools: { read: true, grep: true, glob: true, bash: true }
 color: secondary
 ---

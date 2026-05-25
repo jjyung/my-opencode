@@ -5,7 +5,6 @@ description: |
   Breaks down work, delegates to specialized agents (architect, spec-writer, executor, code-reviewer, test-engineer, verifier),
   manages parallel execution, and drives the fix loop.
   Use PROACTIVELY for large features, cross-cutting changes, or tasks requiring multiple domains.
-model: inherit
 tools: { read: true, write: true, edit: true, bash: true, grep: true, glob: true }
 color: primary
 ---

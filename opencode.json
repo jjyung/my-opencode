@@ -1,7 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "anthropic/claude-sonnet-4-5",
-  "small_model": "anthropic/claude-haiku-4-5",
+  "model": "opencode/zen",
+  "small_model": "opencode/compact",
   "default_agent": "fullstack-dev",
   "instructions": [
     "skills/adr/SKILL.md",
@@ -15,7 +15,7 @@
     "fullstack-dev": {
       "description": "Primary development agent. Orchestrates contract-first ADR → contract → code → verify flow.",
       "mode": "primary",
-      "model": "anthropic/claude-sonnet-4-5",
+      "model": "inherit",
       "prompt": "{file:agents/fullstack-dev.md}",
       "tools": {
         "read": true,
@@ -28,7 +28,7 @@
     "spec-writer": {
       "description": "Analyze requirements and produce contract specifications in docs/specs/. Writes persistent contracts for parallel development.",
       "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-5",
+      "model": "inherit",
       "prompt": "{file:agents/spec-writer.md}",
       "tools": {
         "read": true,
@@ -40,7 +40,7 @@
     "executor": {
       "description": "Implement code changes following an approved contract. Full read/write access for coding.",
       "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-5",
+      "model": "inherit",
       "prompt": "{file:agents/executor.md}",
       "tools": {
         "read": true,
@@ -52,7 +52,7 @@
     "verifier": {
       "description": "Run lint, typecheck, tests, and build to verify code changes. Read-only + bash.",
       "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-5",
+      "model": "inherit",
       "prompt": "{file:agents/verifier.md}",
       "tools": {
         "read": true,
@@ -64,7 +64,7 @@
     "code-reviewer": {
       "description": "Systematic code review across correctness, security, quality, testing, and style dimensions.",
       "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-5",
+      "model": "inherit",
       "prompt": "{file:agents/code-reviewer.md}",
       "tools": {
         "read": true,
@@ -76,7 +76,7 @@
     "test-engineer": {
       "description": "Generate meaningful tests for source code — unit, integration, and E2E. Framework-aware.",
       "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-5",
+      "model": "inherit",
       "prompt": "{file:agents/test-engineer.md}",
       "tools": {
         "read": true,
@@ -88,7 +88,7 @@
     "tech-writer": {
       "description": "Generate and update project documentation — code comments, API docs, README, ADRs, and CHANGELOG.",
       "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-5",
+      "model": "inherit",
       "prompt": "{file:agents/tech-writer.md}",
       "tools": {
         "read": true,
@@ -100,7 +100,7 @@
     "team-lead": {
       "description": "Multi-agent orchestrator for complex tasks. Delegates to architect, spec-writer, executor, code-reviewer, test-engineer, verifier.",
       "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-5",
+      "model": "inherit",
       "prompt": "{file:agents/team-lead.md}",
       "tools": {
         "read": true,
@@ -112,7 +112,7 @@
     "architect": {
       "description": "Capture architecture decisions as ADR documents. Analyzes tradeoffs and records context.",
       "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-5",
+      "model": "inherit",
       "prompt": "{file:agents/architect.md}",
       "tools": {
         "read": true,

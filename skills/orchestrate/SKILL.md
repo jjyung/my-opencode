@@ -1,7 +1,7 @@
 ---
 name: orchestrate
 description: |
-  Multi-agent orchestration for complex development tasks. Breaks down large work, delegates to specialized agents, manages handoffs, and drives the fix loop.
+  Multi-agent orchestration for complex development tasks. Breaks down large work, delegates to specialized agents, manages contracts, and drives the fix loop.
   Use when tasks span multiple domains, require parallel execution, or need full lifecycle management.
   Triggers on: "orchestrate", "coordinate", "manage", "run the full pipeline", "team", "complex task"
 ---
@@ -15,7 +15,7 @@ Multi-agent orchestration workflow for complex development tasks.
 - Task is too large for a single agent
 - Task spans multiple domains (frontend + backend + infra)
 - Need parallel execution of independent subtasks
-- Full lifecycle management from requirements to merge
+- Full lifecycle management from architecture to merge
 
 ## Comparison with fullstack-dev
 
@@ -24,7 +24,7 @@ Multi-agent orchestration workflow for complex development tasks.
 | Scope | Single feature | Multi-domain, complex tasks |
 | Parallelism | Sequential phases | Parallel subtask execution |
 | Delegation | One agent per phase | Multiple agents concurrently |
-| State | Single handoff chain | Parallel + merge handoffs |
+| State | Single contract chain | Parallel + merge contracts |
 | Best for | Well-defined changes | Large features, refactors, cross-cutting work |
 
 ## Workflow
@@ -47,25 +47,27 @@ Break the task into manageable subtasks, each with:
 - Clear input/output
 - Assigned agent type
 - Dependencies between subtasks
+- Whether an ADR or contract is needed first
 
 ### Step 3: Parallel Dispatch
 
 Launch independent subtasks concurrently using the Task tool with appropriate `subagent_type`:
 
 ```markdown
-Task 1: planner (architecture + data model)
-Task 2: planner (API design)
+Task 1: architect (ADR for infrastructure choice)
+Task 2: planner (contract for API design)
 (These are independent — launch in parallel)
 ```
 
 Dependent subtasks run sequentially:
 ```
-Task 1: planner (design schema) → Task 2: executor (implement schema) → Task 3: executor (API endpoints)
+Task 1: architect (ADR) → Task 2: planner (contract) → Task 3: executor (implement)
 ```
 
 ### Step 4: Collection
 
-Read handoff outputs from each subtask. Resolve conflicts between parallel streams.
+Read contract outputs from `docs/adr/` and `docs/specs/` for each subtask.
+Resolve conflicts between parallel streams.
 
 ### Step 5: Synthesis
 
@@ -80,12 +82,21 @@ Combine parallel results into a coherent whole. Write `.handoffs/orchestrate/syn
 Run pr-review on the synthesized result:
 - Delegate to code-reviewer agent
 - Apply fixes if issues found
+- Check that all architectural decisions have ADRs
 
 ### Step 7: Verification
 
 Run tests:
 - Delegate to test-engineer for new test generation
 - Delegate to verifier for full test suite run
+
+## Artifact Summary
+
+| Artifact | Location | Persistent | Purpose |
+|----------|----------|------------|---------|
+| ADR | `docs/adr/NNNN-title.md` | ✅ Committed | Architecture decisions |
+| Contract | `docs/specs/<feature>/` | ✅ Committed | Requirements, ACs, API |
+| Synthesis | `.handoffs/orchestrate/synthesis.md` | ❌ Temporary | Merge notes |
 
 ## Handoff Directory
 

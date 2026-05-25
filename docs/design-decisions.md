@@ -18,29 +18,39 @@
 
 ## D2. Pipeline 架構
 
-**決定：** 參考 oh-my-claudecode 的 pipeline 模式，但簡化為三階段。
+**決定：** Contract-first 四階段流程，參考 Ralph pipeline 的 PRD 理念但分離為 ADR + Contract。
 
 ```
-plan → code → verify → fix (loop)
+[ADR] → Contract → Code → Verify → Fix (loop)
 ```
 
-**不採用** oh-my-claudecode 的 8 種模式（Ralph/Autopilot/Ultrawork/Team/UltraQA/Plan/Ralplan/Deep-Interview），而是專注於一個通用流程，讓使用者可以透過組合 skill 自訂模式。
+- Phase 0 (optional): Architecture Decision Record (why)
+- Phase 1: Contract Specification (what — persistent, committed)
+- Phase 2: Code (implement against contract)
+- Phase 3: Verify (against acceptance criteria from Phase 1)
 
-**理由：** opencode 生態處於早期，先提供一個紮實的預設流程，而不是多種模式讓使用者困惑。
+**改變歷程：** 最初參考 oh-my-claudecode 做 `plan → code → verify`，後改為 contract-first 模式。核心 insight：plan 階段的產出不該是臨時的 handoff，而是長期存在的源頭真相。
+
+**不採用** oh-my-claudecode 的 8 種模式，專注於一個紮實的預設流程。
 
 ---
 
-## D3. Handoff 機制
+## D3. 持久 Contract + 輕量 Handoff
 
-**決定：** 採用 file-based handoff（參考 oh-my-claudecode 和 wshobson-agents）。
+**決定：** 雙層 artifact 系統 — 持久 contract + 輕量 handoff。
 
 ```
-.handoffs/<session>/plan.md → .handoffs/<session>/code.md → .handoffs/<session>/verify.md
+持久（committed）    臨時（gitignored）
+docs/adr/            .handoffs/<session>/code.md
+docs/specs/<feature>/ .handoffs/<session>/verify.md
 ```
 
-**不採用** 純 context-based（agent 直接在 prompt 中傳遞前一階段結果）。
+- **Contract** (`docs/specs/`, `docs/adr/`): 持久、提交到 git、跨 session 有效、前後端共享
+- **Handoff** (`.handoffs/`): 臨時、僅傳遞實作筆記、不複製 contract 內容、可安全刪除
 
-**理由：** file-based handoff 可跨 session、可除錯、避免 context 污染。開銷低（寫幾個 markdown 檔案）。
+**改變歷程：** 最初採用純 handoff 機制（plan.md → code.md → verify.md），但發現 handoff 被刪除後設計脈絡即丟失。引入 contract 作為持久層，handoff 降級為輕量參考。
+
+**不採用** 純 context-based 或純 handoff-based，因為兩者都無法滿足平行開發和歷史追溯的需求。
 
 ---
 
@@ -74,11 +84,21 @@ model: sonnet # 或 opus, haiku, inherit
 {
   "agents": {
     "planner": {
-      "tools": { "read": true, "bash": true, "write": false, "edit": false }
+      "tools": { "read": true, "bash": true, "write": true, "edit": true }
     }
   }
 }
 ```
+
+**權限配置邏輯：**
+
+| Agent | 寫入範圍 | 說明 |
+|-------|----------|------|
+| planner | `docs/specs/` | 寫 contract（原為唯讀，因需產生 contract 文件而開放寫入） |
+| executor | 任意 | 寫程式碼 |
+| architect | `docs/adr/` | 寫 ADR |
+| verifier | 不寫入 | 唯讀 + bash 執行測試 |
+| code-reviewer | 不寫入 | 唯讀審查 |
 
 **開放路線：**
 
@@ -167,3 +187,19 @@ model: sonnet # 或 opus, haiku, inherit
 
 - SKILL.md 餵給 LLM → 英文效果最好
 - 專案文件給人看 → 中文降低 barrier
+
+---
+
+## D13. Contract 與 Handoff 的界線
+
+**決定：** Contract 是「團隊共識」，Handoff 是「跨 agent 的 session 內傳遞」。
+
+| 維度 | Contract | Handoff |
+|------|----------|---------|
+| 生命週期 | 永久（committed） | 暫時（gitignored） |
+| 讀者 | 所有開發者（當前與未來） | 下一個階段的 agent |
+| 內容 | WHY + WHAT（需求、AC、API、資料模型） | HOW（實作筆記、變更摘要） |
+| 變更流程 | Review → commit → code | Write → read → discard |
+| 平行開發 | 前後端可參考同一份實作 | 不支援 |
+
+**關鍵原則：** 如果一份文件在 feature 完成後還有價值 → 放 `docs/`（contract）。如果只對當前 session 有用 → 放 `.handoffs/`。

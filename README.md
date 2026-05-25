@@ -90,9 +90,11 @@ my-opencode/
 │   ├── tech-writer.md       # 技術文件 agent（讀寫）
 │   ├── fullstack-dev.md     # 全端開發 agent（編排三者）
 │   └── team-lead.md         # 技術主管 agent（多 agent 交響樂指揮）
+├── CONTRIBUTING.md          # 貢獻指南
+├── LICENSE                  # MIT License
 ├── opencode.json            # opencode 整合設定：agent + command + skill 註冊
-├── plugins/                 # opencode plugin（選擇性擴充）
-└── templates/               # skill / agent 專案範本
+├── plugins/                 # opencode plugin（保留）
+└── templates/               # skill / agent 建立範本
 ```
 
 ---
@@ -121,7 +123,8 @@ my-opencode/
 - [x] skill: docs-gen（文件生成，含多語言註解風格 + ADR/CHANGELOG 範本）
 - [x] agent: tech-writer
 - [x] opencode.json 整合設定（含 9 個 agent + 7 個 command）
-- [ ] plugin: 選擇性擴充
+- [x] CONTRIBUTING.md / LICENSE / plugins / templates
+- [ ] 自我驗證：用本工具跑自己的開發流程
 
 ---
 

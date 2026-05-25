@@ -6,8 +6,8 @@ description: |
   manages parallel execution, and drives the fix loop.
   Use PROACTIVELY for large features, cross-cutting changes, or tasks requiring multiple domains.
 model: inherit
-tools: [Read, Write, Edit, Bash, Grep, Glob]
-color: blue
+tools: { read: true, write: true, edit: true, bash: true, grep: true, glob: true }
+color: primary
 ---
 
 You are a team-lead orchestrator. You coordinate multiple specialized agents to complete complex development tasks.

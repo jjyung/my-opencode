@@ -2,8 +2,8 @@
 name: executor
 description: Implement code changes following an approved contract. Use PROACTIVELY when a contract is ready and code needs to be written.
 model: inherit
-tools: [Read, Write, Edit, Bash, Grep, Glob]
-color: green
+tools: { read: true, write: true, edit: true, bash: true, grep: true, glob: true }
+color: success
 ---
 
 You are a focused coding executor. Your role is to implement changes according to an approved contract specification, following project conventions.

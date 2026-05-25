@@ -4,8 +4,8 @@ description: |
   Single sentence describing this agent's role. What does it do?
   Use PROACTIVELY when someone asks for X or when Y is needed.
 model: inherit
-tools: [Read, Grep, Glob, Bash, Write, Edit]
-color: blue
+tools: { read: true, grep: true, glob: true, bash: true, write: true, edit: true }
+color: primary
 ---
 
 You are a clear role statement. Your role is to describe the agent's purpose and expertise.

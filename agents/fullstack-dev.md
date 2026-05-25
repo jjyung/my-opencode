@@ -2,8 +2,8 @@
 name: fullstack-dev
 description: Full-stack development agent that orchestrates contract-first development workflow. Use PROACTIVELY when the user says "implement", "build", "add feature", "fix bug", "refactor".
 model: inherit
-tools: [Read, Write, Edit, Bash, Grep, Glob]
-color: blue
+tools: { read: true, write: true, edit: true, bash: true, grep: true, glob: true }
+color: primary
 ---
 
 You are a full-stack development agent. You orchestrate the contract-first development workflow using the dev-flow skill.

@@ -1,7 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode/zen",
-  "small_model": "opencode/compact",
+  "model": "opencode/deepseek-v4-flash-free",
+  "small_model": "opencode/nemotron-3-super-free",
   "default_agent": "fullstack-dev",
   "instructions": [
     "skills/adr/SKILL.md",
@@ -28,7 +28,7 @@
     "spec-writer": {
       "description": "Analyze requirements and produce contract specifications in docs/specs/. Writes persistent contracts for parallel development.",
       "mode": "subagent",
-      "model": "inherit",
+      "model": "opencode/big-pickle",
       "prompt": "{file:agents/spec-writer.md}",
       "tools": {
         "read": true,
@@ -52,7 +52,7 @@
     "verifier": {
       "description": "Run lint, typecheck, tests, and build to verify code changes. Read-only + bash.",
       "mode": "subagent",
-      "model": "inherit",
+      "model": "opencode/nemotron-3-super-free",
       "prompt": "{file:agents/verifier.md}",
       "tools": {
         "read": true,
@@ -64,7 +64,7 @@
     "code-reviewer": {
       "description": "Systematic code review across correctness, security, quality, testing, and style dimensions.",
       "mode": "subagent",
-      "model": "inherit",
+      "model": "opencode/big-pickle",
       "prompt": "{file:agents/code-reviewer.md}",
       "tools": {
         "read": true,
@@ -100,7 +100,7 @@
     "team-lead": {
       "description": "Multi-agent orchestrator for complex tasks. Delegates to architect, spec-writer, executor, code-reviewer, test-engineer, verifier.",
       "mode": "subagent",
-      "model": "inherit",
+      "model": "opencode/big-pickle",
       "prompt": "{file:agents/team-lead.md}",
       "tools": {
         "read": true,
@@ -112,7 +112,7 @@
     "architect": {
       "description": "Capture architecture decisions as ADR documents. Analyzes tradeoffs and records context.",
       "mode": "subagent",
-      "model": "inherit",
+      "model": "opencode/big-pickle",
       "prompt": "{file:agents/architect.md}",
       "tools": {
         "read": true,
@@ -126,32 +126,38 @@
     "spec": {
       "description": "Create a contract specification in docs/specs/ — source of truth for implementation",
       "agent": "spec-writer",
-      "subtask": true
+      "subtask": true,
+      "template": "Analyze the request and produce a contract specification document.\n\n$ARGUMENTS"
     },
     "review": {
       "description": "Review code changes across 5 dimensions (correctness, security, quality, testing, style)",
       "agent": "code-reviewer",
-      "subtask": true
+      "subtask": true,
+      "template": "Review the current changes.\n\n$ARGUMENTS"
     },
     "test": {
       "description": "Generate tests for source code — auto-detects framework and conventions",
       "agent": "test-engineer",
-      "subtask": true
+      "subtask": true,
+      "template": "Generate tests for the current code.\n\n$ARGUMENTS"
     },
     "docs": {
       "description": "Generate or update documentation — code comments, README, API docs, ADRs",
       "agent": "tech-writer",
-      "subtask": true
+      "subtask": true,
+      "template": "Generate or update documentation.\n\n$ARGUMENTS"
     },
     "orchestrate": {
       "description": "Coordinate multiple agents for complex, multi-domain tasks",
       "agent": "team-lead",
-      "subtask": true
+      "subtask": true,
+      "template": "Orchestrate the following complex task.\n\n$ARGUMENTS"
     },
     "adr": {
       "description": "Create or update an Architecture Decision Record",
       "agent": "architect",
-      "subtask": true
+      "subtask": true,
+      "template": "Create an Architecture Decision Record.\n\n$ARGUMENTS"
     },
     "verify": {
       "description": "Run lint, typecheck, tests, and build to verify changes",

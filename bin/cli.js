@@ -3,10 +3,18 @@
 /**
  * my-opencode CLI
  *
- * Usage:
- *   my-opencode init [target-dir]    Install skills/agents into .opencode/
- *   my-opencode list                 List available skills and agents
- *   my-opencode help                 Show this help
+ * Two install methods:
+ *
+ *   1. npm install my-opencode
+ *      → Files in node_modules/ (gitignored) + postinstall copies to .opencode/
+ *
+ *   2. npx my-opencode init
+ *      → Files copied directly to .opencode/, no dependency in package.json
+ *
+ * Commands:
+ *   init [target-dir]    Install skills/agents into .opencode/
+ *   list                 List available skills and agents
+ *   help                 Show this help
  */
 
 import { fileURLToPath } from "node:url";
@@ -96,8 +104,17 @@ function cmdHelp() {
   console.log(`
 \x1b[1mmy-opencode\x1b[0m — 高品質 opencode 開發流程 skill 與 agents 集合
 
-\x1b[1mUSAGE\x1b[0m
-  my-opencode <command> [options]
+\x1b[1m安裝方式 (擇一)\x1b[0m
+
+  \x1b[36m方法 A: npm install\x1b[0m (自動複製到 .opencode/)
+    npm install my-opencode
+    ✓ postinstall 自動將 agents/ skills/ 複製到 .opencode/
+    ✓ 原始檔案留在 node_modules/ (已 gitignore)
+
+  \x1b[36m方法 B: npx\x1b[0m (不留 package.json dependency)
+    npx my-opencode init
+    ✓ 直接安裝到 .opencode/
+    ✓ 不寫入 package.json
 
 \x1b[1mCOMMANDS\x1b[0m
   init  [target-dir]  安裝 skills/agents 到 .opencode/ 下
@@ -106,10 +123,10 @@ function cmdHelp() {
   help                顯示此說明
 
 \x1b[1mEXAMPLES\x1b[0m
-  npx my-opencode init              # 安裝到 .opencode/
-  npx my-opencode init ./my-project # 安裝到 ./my-project/.opencode/
-  npx my-opencode list
-  npx my-opencode help
+  npm install my-opencode              # 方法 A (自動)
+  npx my-opencode init                 # 方法 B (手動)
+  npx my-opencode init ./my-project    # 指定專案目錄
+  npx my-opencode list                 # 列出內容
 `);
 }
 
@@ -249,7 +266,7 @@ function copyDirSync(src, dst) {
 
 function main() {
   const args = process.argv.slice(2);
-  const cmd = args[0] || "help";
+  const cmd = args[0] || "";
 
   switch (cmd) {
     case "init":
@@ -263,8 +280,30 @@ function main() {
     case "help":
     case "--help":
     case "-h":
-    default:
       cmdHelp();
+      break;
+    default:
+      // No args — show a friendly welcome and prompt to init
+      console.log(`
+\x1b[1mmy-opencode\x1b[0m — 高品質 opencode 開發流程 skill 與 agents 集合
+
+在專案中執行以下指令來安裝到 \x1b[33m.opencode/\x1b[0m：
+
+  \x1b[36mnpx my-opencode init\x1b[0m
+
+安裝後，將以下內容加入你的 \x1b[33mopencode.json\x1b[0m：
+
+  \x1b[2m"instructions": [
+    ".opencode/skills/adr/SKILL.md",
+    ".opencode/skills/dev-flow/SKILL.md",
+    ".opencode/skills/pr-review/SKILL.md",
+    ".opencode/skills/test-gen/SKILL.md",
+    ".opencode/skills/docs-gen/SKILL.md",
+    ".opencode/skills/orchestrate/SKILL.md"
+  ]\x1b[0m
+
+更多資訊請執行：\x1b[36mnpx my-opencode help\x1b[0m
+`);
       break;
   }
 }

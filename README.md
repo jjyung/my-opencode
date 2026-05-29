@@ -29,8 +29,25 @@ npx my-opencode help    # 顯示說明
 
 ### 發布（維護者專用）
 
+#### Token 設定
+
+發布前需要建立一個 **Access Token**（繞過 2FA）：
+
+1. 到 https://www.npmjs.com/settings/~/tokens
+2. Generate New Token → Granular Access Token
+3. 勾選 bypass two-factor authentication
+4. 設定 Read and Write 權限
+5. 將產生的 token 寫入專案 `.npmrc`：
+
 ```bash
-npm login
+echo "//registry.npmjs.org/:_authToken=npm_xxxxxxxxxxxx" > .npmrc
+```
+
+> ⚠️ `.npmrc` 已加入 `.gitignore`，不會被 commit。
+
+#### 發布指令
+
+```bash
 npm publish
 ```
 

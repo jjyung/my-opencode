@@ -83,6 +83,89 @@ print('All instructions exist')
 "
 ```
 
+## 版本管理與發布
+
+### Git 分支策略
+
+```
+main        ─── 穩定版本，只從 feature branch merge
+  │
+  ├── feat/<name>   新功能
+  ├── fix/<name>    修 bug
+  ├── refactor/     重構
+  └── docs/         文件更新
+```
+
+- `main` 永遠保持可發布狀態
+- 功能開發在 feature branch 進行，完成後 squash merge 到 main
+- commit message 建議用 [Conventional Commits](https://www.conventionalcommits.org/)：
+  ```
+  feat: 新增 XXX skill
+  fix: 修正 YYY agent 路徑錯誤
+  docs: 更新 README 安裝說明
+  chore: 更新相依套件
+  ```
+
+### 版本號規則（SemVer）
+
+| 變動類型 | 版本 increment | 範例 |
+|---------|---------------|------|
+| 向下不相容的變更 | `major` | 1.0.0 → 2.0.0 |
+| 新增功能（向下相容） | `minor` | 1.0.0 → 1.1.0 |
+| Bug 修復或小調整 | `patch` | 1.0.0 → 1.0.1 |
+
+### Tag 規則
+
+每個發布版本必須有對應的 git tag，格式為 `v<version>`：
+
+```bash
+# 發布前建立 tag
+npm version patch   # 自動更新 version + git commit + git tag v1.0.1
+# 或手動
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+### npm 發布流程
+
+```bash
+# 1. 登入 npm
+npm login
+
+# 2. 確認發布內容
+npm pack --dry-run
+
+# 3. 更新版本號＋建立 tag
+npm version patch   # minor / major
+
+# 4. 發布到 npm
+npm publish
+
+# 5. 推送 tag 到 GitHub
+git push origin main --tags
+```
+
+### 發布前檢查清單
+
+- [ ] skills / agents 目錄完整
+- [ ] `opencode.json` JSON 語法正確（`python3 -c "import json; json.load(open('opencode.json'))"`）
+- [ ] 所有 agent prompt 檔案存在
+- [ ] `npm pack --dry-run` 確認內容正確
+- [ ] 無殘留除錯內容或機密資訊
+
+### 版本回退（緊急狀況）
+
+```bash
+# 72 小時內可 unpublish
+npm unpublish my-opencode@1.0.0
+
+# git tag 刪除
+git tag -d v1.0.0
+git push origin :refs/tags/v1.0.0
+```
+
+> ⚠️ npm 不允許刪除已發布超過 72 小時的套件。發布前務必用 `npm pack --dry-run` 確認內容。
+
 ## 授權
 
 本專案採用 MIT License。貢獻即同意以相同授權釋出。

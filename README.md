@@ -6,6 +6,36 @@
 
 ---
 
+## 快速安裝（npm）
+
+```bash
+# 在專案中安裝（產生 .opencode/）
+npx my-opencode init
+
+# 安裝到指定專案
+npx my-opencode init ./my-project
+```
+
+這會在你的專案下建立 `.opencode/`，包含 `skills/`、`agents/`、`opencode.json`。
+
+opencode 會自動發現 `.opencode/opencode.json`，無需額外設定。
+
+其他指令：
+
+```bash
+npx my-opencode list    # 列出可用 skills 與 agents
+npx my-opencode help    # 顯示說明
+```
+
+### 發布（維護者專用）
+
+```bash
+npm login
+npm publish
+```
+
+---
+
 ## 靈感來源
 
 | 專案 | Stars | 核心啟發 |

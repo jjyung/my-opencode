@@ -1,6 +1,6 @@
 {
   "name": "my-opencode",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "高品質 opencode 開發流程 skill 與 agents 集合 — Contract-First 開發流程、ADR、PR Review、測試生成、文件生成",
   "keywords": [
     "opencode",
@@ -15,15 +15,15 @@
     "agents",
     "skills"
   ],
-  "homepage": "https://github.com/cfh00902455/my-opencode#readme",
+  "homepage": "https://github.com/jjyung/my-opencode#readme",
   "bugs": {
-    "url": "https://github.com/cfh00902455/my-opencode/issues"
+    "url": "https://github.com/jjyung/my-opencode/issues"
   },
   "license": "MIT",
   "author": "cfh00902455",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cfh00902455/my-opencode.git"
+    "url": "git+https://github.com/jjyung/my-opencode.git"
   },
   "scripts": {
     "postinstall": "node scripts/postinstall.js"

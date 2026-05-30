@@ -240,7 +240,7 @@ function cmdInit(targetDir) {
   console.log(`${INDENT}Agents and commands from .opencode/opencode.json`);
   console.log(`${INDENT}are auto-discovered by opencode.`);
   console.log();
-  info("Documentation: https://github.com/cfh00902455/my-opencode");
+  info("Documentation: https://github.com/jjyung/my-opencode");
   console.log();
 }
 

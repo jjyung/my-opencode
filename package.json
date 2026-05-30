@@ -1,6 +1,6 @@
 {
   "name": "my-opencode",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "高品質 opencode 開發流程 skill 與 agents 集合 — Contract-First 開發流程、ADR、PR Review、測試生成、文件生成",
   "keywords": [
     "opencode",

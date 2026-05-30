@@ -16,6 +16,9 @@
       "description": "Primary development agent. Orchestrates contract-first ADR → contract → code → verify flow.",
       "mode": "primary",
             "prompt": "{file:agents/fullstack-dev.md}",
+      "permission": {
+        "task": "ask"
+      },
       "tools": {
         "read": true,
         "write": true,

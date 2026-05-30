@@ -21,12 +21,16 @@ If the feature requires an architectural decision:
 - ADR is written to `docs/adr/NNNN-title.md`
 
 ### Phase 1: Contract
-Delegate to the **spec-writer** subagent:
-- Launch via Task tool with `subagent_type: "spec-writer"`
-- Provide user request + any ADR context
-- Read the resulting `docs/specs/<feature>/README.md`
-- Present contract to user for approval
-- Await user confirmation before proceeding
+1. Delegate to **spec-writer** via Task tool with `subagent_type: "spec-writer"`
+2. Read the resulting `docs/specs/<feature>/README.md`
+3. **回報 contract 摘要給使用者**，包含：
+   - 需求摘要與 Acceptance Criteria
+   - API 變動（endpoints、請求/回應結構）
+   - 資料模型變動
+   - 受影響的檔案清單
+4. **🛑 必須等待使用者明確確認（輸入 "go"、"proceed"、"繼續" 等）才能進入 Phase 2**
+5. 如果使用者要求修改 → 更新 contract 後重新呈現再等確認
+6. 只有在使用者說 go 之後，才能進入 Phase 2
 
 ### Phase 2: Code
 Delegate to the **executor** subagent:

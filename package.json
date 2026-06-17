@@ -29,13 +29,15 @@
     "postinstall": "node scripts/postinstall.js"
   },
   "bin": {
-    "my-opencode": "bin/cli.js"
+    "my-opencode": "bin/cli.js",
+    "moc": "bin/moc"
   },
   "files": [
     "bin/",
     "scripts/",
     "skills/",
     "agents/",
+    "plugins/",
     "opencode.json"
   ],
   "engines": {

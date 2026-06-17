@@ -4,7 +4,7 @@
  * postinstall.js — npm postinstall hook
  *
  * After `npm install my-opencode` in another project, this script
- * automatically copies agents/, skills/, and opencode.json to the
+ * automatically copies agents/, skills/, plugins/, and opencode.json to the
  * target project's .opencode/ directory.
  *
  * The package stays in node_modules/ (gitignored, no residue).
@@ -24,6 +24,7 @@ const __dirname = path.dirname(__filename);
 const PKG_DIR = path.resolve(__dirname, "..");
 const SKILLS_SRC = path.join(PKG_DIR, "skills");
 const AGENTS_SRC = path.join(PKG_DIR, "agents");
+const PLUGINS_SRC = path.join(PKG_DIR, "plugins");
 const CONFIG_SRC = path.join(PKG_DIR, "opencode.json");
 
 // ─── Detect project root ────────────────────────────────────────────────
@@ -128,6 +129,7 @@ function main() {
   const targetDir = path.join(projectRoot, ".opencode");
   const targetSkills = path.join(targetDir, "skills");
   const targetAgents = path.join(targetDir, "agents");
+  const targetPlugins = path.join(targetDir, "plugins");
   const targetConfig = path.join(targetDir, "opencode.json");
 
   // ── Create .opencode/ ──────────────────────────────────────────────────
@@ -168,15 +170,33 @@ function main() {
     }
   }
 
+  // ── Copy plugins ───────────────────────────────────────────────────────
+  let pluginCount = 0;
+  if (fs.existsSync(PLUGINS_SRC)) {
+    fs.mkdirSync(targetPlugins, { recursive: true });
+    const plugins = fs
+      .readdirSync(PLUGINS_SRC, { withFileTypes: true })
+      .filter((d) => d.isFile() && d.name.endsWith(".mjs"))
+      .map((d) => d.name);
+
+    for (const plugin of plugins) {
+      const dst = path.join(targetPlugins, plugin);
+      if (copyFileIfNotExists(path.join(PLUGINS_SRC, plugin), dst)) {
+        pluginCount++;
+      }
+    }
+  }
+
   // ── Copy opencode.json ────────────────────────────────────────────────
   copyFileIfNotExists(CONFIG_SRC, targetConfig);
 
   // Suppress output if nothing changed (quiet idempotency)
-  if (skillCount === 0 && agentCount === 0) return;
+  if (skillCount === 0 && agentCount === 0 && pluginCount === 0) return;
 
   header("my-opencode: installed to .opencode/");
   if (skillCount > 0) success(`Skills: ${skillCount}`);
   if (agentCount > 0) success(`Agents: ${agentCount}`);
+  if (pluginCount > 0) success(`Plugins: ${pluginCount}`);
 }
 
 main();

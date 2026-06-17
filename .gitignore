@@ -1,6 +1,10 @@
 # Dev-flow handoff files
 .handoffs/
 
+# Local opencode cache artifacts
+.opencode/cache/
+.opencode/node_modules/
+
 # OS files
 .DS_Store
 

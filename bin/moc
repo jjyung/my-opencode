@@ -1,0 +1,199 @@
+#!/bin/sh
+
+profile=
+known_profiles="opencode openai google copilot"
+
+print_help() {
+  cat <<'EOF'
+Usage:
+  moc [profile] [opencode-args...]
+  moc --help
+  moc doctor [profile]
+  moc print-config [profile]
+
+Profiles:
+  opencode | openai | google | copilot
+
+Examples:
+  moc
+  moc google
+  moc openai --list-agents
+  moc doctor google
+  moc print-config google
+
+Notes:
+  - `moc` without extra args launches interactive opencode.
+  - Use `moc doctor` or `moc print-config` for non-interactive debugging.
+EOF
+}
+
+print_doctor() {
+  active_profile=$1
+  printf 'profile=%s\n' "$active_profile"
+  printf 'plugin_path=%s\n' "$plugin_path"
+  printf 'config_path=%s\n' "$config_path"
+  printf 'cache_content_path=%s\n' "$cache_content_path"
+  printf 'cache_meta_path=%s\n' "$cache_meta_path"
+  printf 'plugin_exists=%s\n' "$( [ -f "$plugin_path" ] && printf yes || printf no )"
+  printf 'config_exists=%s\n' "$( [ -f "$config_path" ] && printf yes || printf no )"
+  printf 'cache_content_exists=%s\n' "$( [ -f "$cache_content_path" ] && printf yes || printf no )"
+  printf 'cache_meta_exists=%s\n' "$( [ -f "$cache_meta_path" ] && printf yes || printf no )"
+}
+
+case "${1-}" in
+  --help|-h|help)
+    print_help
+    exit 0
+    ;;
+  "")
+    profile=opencode
+    ;;
+  doctor)
+    profile=${2-opencode}
+    ;;
+  print-config)
+    profile=${2-opencode}
+    ;;
+  opencode|openai|google|copilot)
+    profile=$1
+    shift
+    ;;
+esac
+
+if [ -z "$profile" ]; then
+  exec opencode "$@"
+fi
+
+case "$profile" in
+  opencode|openai|google|copilot)
+    ;;
+  *)
+    printf '%s\n' "moc: unknown profile '$profile'. Must be one of: $known_profiles" >&2
+    exit 1
+    ;;
+esac
+
+exec_opencode_with_profile() {
+  exec env \
+    OPENCODE_PROVIDER_PROFILE="$profile" \
+    OPENCODE_CONFIG_CONTENT="$config_content" \
+    opencode "$@"
+}
+
+plugin_path=.opencode/plugins/provider-profile.mjs
+config_path=.opencode/opencode.json
+cache_dir=.opencode/cache/provider-profile
+cache_content_path=$cache_dir/$profile.json
+cache_meta_path=$cache_dir/$profile.meta
+
+get_mtime() {
+  if stat -f %m "$1" >/dev/null 2>&1; then
+    stat -f %m "$1"
+  else
+    stat -c %Y "$1"
+  fi
+}
+
+read_meta() {
+  meta_profile=
+  meta_plugin_mtime=
+  meta_config_mtime=
+
+  [ -f "$1" ] || return 1
+
+  while IFS='=' read -r key value; do
+    case "$key" in
+      profile) meta_profile=$value ;;
+      plugin_mtime) meta_plugin_mtime=$value ;;
+      config_mtime) meta_config_mtime=$value ;;
+    esac
+  done < "$1"
+
+  [ -n "$meta_profile" ] && [ -n "$meta_plugin_mtime" ] && [ -n "$meta_config_mtime" ]
+}
+
+write_cache() {
+  tmp_content=$cache_content_path.tmp.$$ 
+  tmp_meta=$cache_meta_path.tmp.$$ 
+
+  if ! mkdir -p "$cache_dir" 2>/dev/null; then
+    return 1
+  fi
+
+  if ! printf '%s\n' "$1" > "$tmp_content"; then
+    rm -f "$tmp_content" "$tmp_meta"
+    return 1
+  fi
+
+  if ! {
+    printf 'profile=%s\n' "$profile"
+    printf 'plugin_mtime=%s\n' "$plugin_mtime"
+    printf 'config_mtime=%s\n' "$config_mtime"
+  } > "$tmp_meta"; then
+    rm -f "$tmp_content" "$tmp_meta"
+    return 1
+  fi
+
+  if ! mv "$tmp_content" "$cache_content_path" || ! mv "$tmp_meta" "$cache_meta_path"; then
+    rm -f "$tmp_content" "$tmp_meta"
+    return 1
+  fi
+
+  return 0
+}
+
+if [ ! -f "$plugin_path" ]; then
+  printf '%s\n' "moc: plugin not found at $plugin_path; falling back to plain opencode" >&2
+  exec opencode "$@"
+fi
+
+if [ ! -f "$config_path" ]; then
+  printf '%s\n' "moc: config not found at $config_path; cannot compute provider profile override" >&2
+  exit 1
+fi
+
+case "${1-}" in
+  doctor)
+    print_doctor "$profile"
+    exit 0
+    ;;
+esac
+
+plugin_mtime=$(get_mtime "$plugin_path") || {
+  printf '%s\n' "moc: failed to read plugin mtime from $plugin_path" >&2
+  exit 1
+}
+
+config_mtime=$(get_mtime "$config_path") || {
+  printf '%s\n' "moc: failed to read config mtime from $config_path" >&2
+  exit 1
+}
+
+config_content=
+
+if read_meta "$cache_meta_path" && [ -f "$cache_content_path" ]; then
+  if [ "$meta_profile" = "$profile" ] \
+    && [ "$meta_plugin_mtime" = "$plugin_mtime" ] \
+    && [ "$meta_config_mtime" = "$config_mtime" ]; then
+    config_content=$(tr -d '\n' < "$cache_content_path") || config_content=
+  fi
+fi
+
+if [ -z "$config_content" ]; then
+  if ! config_content=$(OPENCODE_PROVIDER_PROFILE=$profile node "$plugin_path"); then
+    printf '%s\n' "moc: failed to compute OPENCODE_CONFIG_CONTENT from $plugin_path" >&2
+    exit 1
+  fi
+
+  write_cache "$config_content" || \
+    printf '%s\n' "moc: warning: failed to update cache at $cache_dir; continuing with fresh config" >&2
+fi
+
+case "${1-}" in
+  print-config)
+    printf '%s\n' "$config_content"
+    exit 0
+    ;;
+esac
+
+exec_opencode_with_profile "$@"

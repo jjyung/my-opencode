@@ -12,7 +12,7 @@
  *      → Files copied directly to .opencode/, no dependency in package.json
  *
  * Commands:
- *   init [target-dir]    Install skills/agents into .opencode/
+ *   init [target-dir]    Install skills/agents/plugins into .opencode/
  *   list                 List available skills and agents
  *   help                 Show this help
  */
@@ -26,6 +26,7 @@ const PKG_ROOT = path.resolve(path.dirname(__filename), "..");
 
 const SKILLS_DIR = path.join(PKG_ROOT, "skills");
 const AGENTS_DIR = path.join(PKG_ROOT, "agents");
+const PLUGINS_DIR = path.join(PKG_ROOT, "plugins");
 const OPENCODE_CONFIG = path.join(PKG_ROOT, "opencode.json");
 
 const INDENT = "  ";
@@ -108,7 +109,7 @@ function cmdHelp() {
 
   \x1b[36m方法 A: npm install\x1b[0m (自動複製到 .opencode/)
     npm install my-opencode
-    ✓ postinstall 自動將 agents/ skills/ 複製到 .opencode/
+    ✓ postinstall 自動將 agents/ skills/ plugins/ 複製到 .opencode/
     ✓ 原始檔案留在 node_modules/ (已 gitignore)
 
   \x1b[36m方法 B: npx\x1b[0m (不留 package.json dependency)
@@ -116,17 +117,24 @@ function cmdHelp() {
     ✓ 直接安裝到 .opencode/
     ✓ 不寫入 package.json
 
-\x1b[1mCOMMANDS\x1b[0m
-  init  [target-dir]  安裝 skills/agents 到 .opencode/ 下
+  \x1b[1mCOMMANDS\x1b[0m
+  init  [target-dir]  安裝 skills/agents/plugins 到 .opencode/ 下
                        (預設: 當前目錄的 .opencode/)
   list                列出可用的 skills 與 agents
   help                顯示此說明
 
-\x1b[1mEXAMPLES\x1b[0m
+\x1b[1mLAUNCHER\x1b[0m
+  moc                 預設使用 opencode profile 啟動 opencode
+  moc openai          使用 openai profile 啟動 opencode
+  moc google          使用 google profile 啟動 opencode
+  moc --help          透明轉發到 opencode --help
+
+  \x1b[1mEXAMPLES\x1b[0m
   npm install my-opencode              # 方法 A (自動)
   npx my-opencode init                 # 方法 B (手動)
   npx my-opencode init ./my-project    # 指定專案目錄
   npx my-opencode list                 # 列出內容
+  moc openai                           # 用 openai profile 啟動
 `);
 }
 
@@ -208,6 +216,25 @@ function cmdInit(targetDir) {
   }
   success(`Agents: ${agentCount} installed → .opencode/agents/`);
 
+  // ── Copy plugins ─────────────────────────────────────────────────────────
+  const targetPlugins = path.join(target, "plugins");
+  if (!fs.existsSync(targetPlugins)) {
+    fs.mkdirSync(targetPlugins, { recursive: true });
+  }
+  const plugins = getFiles(PLUGINS_DIR).filter((name) => name.endsWith(".mjs"));
+  let pluginCount = 0;
+  for (const plugin of plugins) {
+    const src = path.join(PLUGINS_DIR, plugin);
+    const dst = path.join(targetPlugins, plugin);
+    if (!fs.existsSync(dst)) {
+      fs.copyFileSync(src, dst);
+      pluginCount++;
+    } else {
+      warn(`Skipped (already exists): plugins/${plugin}`);
+    }
+  }
+  success(`Plugins: ${pluginCount} installed → .opencode/plugins/`);
+
   // ── Generate opencode.json ──────────────────────────────────────────────
   const targetConfig = path.join(target, "opencode.json");
   if (!fs.existsSync(targetConfig)) {
@@ -226,6 +253,7 @@ function cmdInit(targetDir) {
   console.log();
   header("Installation Complete");
   info("my-opencode is ready at .opencode/");
+  info('Use "moc" as the primary launcher once the bin is on your PATH');
   console.log();
   console.log(`${INDENT}Your project's opencode.json should reference:`);
   console.log(`${INDENT}  "instructions": [`);
@@ -237,7 +265,7 @@ function cmdInit(targetDir) {
   console.log(`${INDENT}    ".opencode/skills/orchestrate/SKILL.md"`);
   console.log(`${INDENT}  ]`);
   console.log();
-  console.log(`${INDENT}Agents and commands from .opencode/opencode.json`);
+  console.log(`${INDENT}Agents, commands, and plugins from .opencode/opencode.json`);
   console.log(`${INDENT}are auto-discovered by opencode.`);
   console.log();
   info("Documentation: https://github.com/jjyung/my-opencode");
@@ -303,6 +331,8 @@ function main() {
   ]\x1b[0m
 
 更多資訊請執行：\x1b[36mnpx my-opencode help\x1b[0m
+
+若已透過 npm install 安裝，也可直接使用：\x1b[36mmoc\x1b[0m / \x1b[36mmoc openai\x1b[0m
 `);
       break;
   }

@@ -9,16 +9,45 @@
 ## 快速安裝（npm）
 
 ```bash
-# 在專案中安裝（產生 .opencode/）
+# 在專案中安裝（產生 .opencode/，並提供 moc launcher）
+npm install my-opencode
+
+# 或只初始化 .opencode/
 npx my-opencode init
 
 # 安裝到指定專案
 npx my-opencode init ./my-project
 ```
 
-這會在你的專案下建立 `.opencode/`，包含 `skills/`、`agents/`、`opencode.json`。
+這會在你的專案下建立 `.opencode/`，包含 `skills/`、`agents/`、`plugins/`、`opencode.json`。
 
 opencode 會自動發現 `.opencode/opencode.json`，無需額外設定。
+
+---
+
+### 本地開發（git clone）
+
+如果直接 clone 本 repo 做開發或試用：
+
+```bash
+git clone https://github.com/jjyung/my-opencode.git
+cd my-opencode
+npm link    # 將 bin/moc 註冊到 PATH，讓 moc 指令全域可用
+```
+
+`npm link` 完成後，`moc` 即可在任何目錄使用。
+
+---
+
+安裝完成後，`moc` 會成為主要入口：
+
+```bash
+moc               # 預設 opencode profile
+moc openai        # 切到 OpenAI profile
+moc google        # 切到 Google profile
+moc copilot       # 切到 Copilot profile
+moc --help        # 透明轉發到 opencode --help
+```
 
 其他指令：
 
@@ -26,6 +55,56 @@ opencode 會自動發現 `.opencode/opencode.json`，無需額外設定。
 npx my-opencode list    # 列出可用 skills 與 agents
 npx my-opencode help    # 顯示說明
 ```
+
+## Provider Profile 切換
+
+內建 `provider-profile` plugin / resolver，主要透過 `moc` 切換整套模型配置。
+
+支援值：`opencode`（預設）、`openai`、`google`、`copilot`
+
+| Profile | Primary / heavy | Small / verifier |
+|---------|------------------|------------------|
+| `opencode` | `opencode/big-pickle` | `opencode/deepseek-v4-flash-free` |
+| `openai` | `openai/gpt-5.4` | `openai/gpt-5.4-mini` |
+| `google` | `google/gemini-3.1-pro-preview-customtools` | `google/gemini-3.5-flash` |
+| `copilot` | `copilot/gpt-5.4` | `copilot/gpt-5.4-mini` |
+
+```bash
+# 預設 profile（opencode）
+moc
+
+# 切到 OpenAI
+moc openai
+
+# 切到 Google
+moc google
+
+# 轉發額外參數
+moc openai --list-agents
+```
+
+`moc` 會在目前工作目錄尋找 `.opencode/plugins/provider-profile.mjs` 與 `.opencode/opencode.json`。
+對 `opencode` / `openai` / `google` / `copilot` 這四個 profile，會把產生出的 `OPENCODE_CONFIG_CONTENT` 快取到 `.opencode/cache/provider-profile/`；只要 profile、plugin mtime、config mtime 都沒變，就直接重用快取，不再重新跑 Node。若 plugin 缺失，則會警告並回退為 plain `opencode`。
+
+若要在 script 中直接使用環境變數，也可以：
+
+```bash
+OPENCODE_PROVIDER_PROFILE=openai \
+OPENCODE_CONFIG_CONTENT="$(node .opencode/plugins/provider-profile.mjs)" \
+opencode
+```
+
+如果想固定專案 profile，可把 `.opencode/opencode.json` 的 plugin 設定改成 tuple：
+
+```json
+{
+  "plugin": [
+    ["plugins/provider-profile.mjs", { "profile": "google" }]
+  ]
+}
+```
+
+此 tuple 會覆寫 `OPENCODE_PROVIDER_PROFILE`。
 
 ### 發布（維護者專用）
 

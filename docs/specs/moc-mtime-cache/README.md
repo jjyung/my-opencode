@@ -33,7 +33,7 @@ Improve `moc` startup time by avoiding a fresh provider-profile plugin execution
 | ID | Description | Priority |
 |----|-------------|----------|
 | NFR-1 | Steady-state launches for recognized profiles SHOULD avoid the extra Node.js provider-profile subprocess | SHOULD |
-| NFR-2 | The cache mechanism MUST remain POSIX-shell compatible on macOS/Linux (`/bin/sh`) | MUST |
+| NFR-2 | The cache mechanism MUST remain interoperable between the npm Node.js launcher and the preserved POSIX shell launcher on macOS/Linux (`/bin/sh`) | MUST |
 | NFR-3 | The cache mechanism MUST add no new npm dependencies | MUST |
 | NFR-4 | Cache files MUST live under the project-local `.opencode/` directory so they are naturally scoped to the active project | MUST |
 | NFR-5 | The implementation SHOULD prefer simple file metadata checks over heavier content hashing | SHOULD |
@@ -237,7 +237,8 @@ Internal data artifacts added:
 
 | File | Change type | Description |
 |------|-------------|-------------|
-| `bin/moc` | **MODIFY** | Add mtime-based cache lookup, validation, refresh, and safe fallback behavior |
+| `bin/moc` | **MODIFY** | Existing POSIX launcher cache behavior remains the compatibility baseline for direct shell execution |
+| `bin/moc.js` | **MODIFY** | Cross-platform launcher implements the same mtime-based cache lookup, validation, refresh, and safe fallback behavior |
 | `README.md` | **MODIFY** | Document that `moc` caches generated config and refreshes it when local plugin/config files change |
 | `plugins/README.md` | **MODIFY** | Document cache behavior and invalidation rules for provider-profile launcher integration |
 | `docs/specs/moc-mtime-cache/README.md` | **CREATE** | Persistent contract for this feature |
@@ -257,7 +258,6 @@ Optional/if needed during implementation:
 - Cross-project or global cache sharing
 - Runtime profile switching after `opencode` has already started
 - Changing model mappings for any provider profile
-- Windows-native launcher support
 - Adding new provider profiles
 
 ---

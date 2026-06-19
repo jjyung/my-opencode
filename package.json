@@ -30,7 +30,7 @@
   },
   "bin": {
     "my-opencode": "bin/cli.js",
-    "moc": "bin/moc"
+    "moc": "bin/moc.js"
   },
   "files": [
     "bin/",

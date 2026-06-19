@@ -36,6 +36,7 @@ npm link    # 將 bin/moc 註冊到 PATH，讓 moc 指令全域可用
 ```
 
 `npm link` 完成後，`moc` 即可在任何目錄使用。
+新的 npm bin 入口是跨平台的 `bin/moc.js`；repo 內仍保留 `bin/moc` 給直接 shell 執行情境使用。
 
 ---
 
@@ -48,6 +49,8 @@ moc google        # 切到 Google profile
 moc copilot       # 切到 Copilot profile
 moc --help        # 透明轉發到 opencode --help
 ```
+
+Windows（cmd、PowerShell）現在也支援直接執行 `moc`；npm 會自動建立對應 shim，無需額外安裝 `.cmd` 或 `.ps1` 檔案。
 
 其他指令：
 
@@ -85,6 +88,8 @@ moc openai --list-agents
 
 `moc` 會在目前工作目錄尋找 `.opencode/plugins/provider-profile.mjs` 與 `.opencode/opencode.json`。
 對 `opencode` / `openai` / `google` / `copilot` 這四個 profile，會把產生出的 `OPENCODE_CONFIG_CONTENT` 快取到 `.opencode/cache/provider-profile/`；只要 profile、plugin mtime、config mtime 都沒變，就直接重用快取，不再重新跑 Node。若 plugin 缺失，則會警告並回退為 plain `opencode`。
+
+若你直接用 repo 內的 `bin/moc`，仍會走既有 POSIX shell launcher；透過 npm 安裝、`npm link`、`npx` 取得的 `moc` 則會走跨平台的 `bin/moc.js`。
 
 若要在 script 中直接使用環境變數，也可以：
 

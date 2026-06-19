@@ -77,9 +77,9 @@ The `opencode` default profile uses the **OpenCode Zen provider series** at full
 | NFR-2 | Profile resolution MUST complete synchronously within <100ms | MUST |
 | NFR-3 | Plugin MUST be an ES module (`.mjs`) to match `"type": "module"` in `package.json` | MUST |
 | NFR-4 | All model strings MUST use `provider/model` format | MUST |
-| NFR-5 | Launcher MUST keep shell-side overhead minimal and use at most one Node.js subprocess before `exec` to compute `OPENCODE_CONFIG_CONTENT` | MUST |
-| NFR-6 | Launcher MUST be a portable POSIX shell script (no bashisms, compatible with `/bin/sh` on macOS/Linux) | MUST |
-| NFR-7 | No npm dependencies for the launcher; the Node.js plugin is the only dependency (already present) | MUST |
+| NFR-5 | Launcher MUST keep overhead minimal and use at most one Node.js subprocess before invoking `opencode` to compute `OPENCODE_CONFIG_CONTENT` | MUST |
+| NFR-6 | The repo MUST preserve a portable POSIX shell launcher at `bin/moc` for direct-use scenarios on macOS/Linux and POSIX-capable environments | MUST |
+| NFR-7 | The npm `moc` bin entry MUST point at a cross-platform Node.js launcher while adding no npm dependencies beyond Node.js stdlib | MUST |
 
 ---
 
@@ -205,13 +205,16 @@ Direct execution MUST emit a JSON object suitable for `OPENCODE_CONFIG_CONTENT` 
 
 ---
 
-## Launcher Contract (`bin/moc`)
+## Launcher Contract (`bin/moc.js` + `bin/moc`)
 
 ### File Location
 
 ```
-bin/moc                          # POSIX shell script (user-facing launcher)
+bin/moc.js                       # Cross-platform npm bin entry
+bin/moc                          # Preserved POSIX shell launcher for direct invocation
 ```
+
+The `moc` command installed by npm MUST resolve to `bin/moc.js` so Windows shims work in cmd and PowerShell. The repo continues to ship `bin/moc` for users who invoke the shell launcher directly.
 
 ### Behavior Table
 
@@ -457,14 +460,17 @@ THEN the parent shell MUST NOT have OPENCODE_PROVIDER_PROFILE or OPENCODE_CONFIG
 | `bin/cli.js` | **MODIFY** | Copy `plugins/` into `.opencode/` during `npx my-opencode init` |
 | `package.json` | **MODIFY** | Add `"moc": "bin/moc"` to `"bin"` object |
 | `docs/specs/provider-profile-plugin/README.md` | **MODIFY** | This contract document (tier-2 model refresh) |
-| `bin/moc` | **CREATE** | New POSIX shell script: `moc` launcher — user-facing entry point |
+| `bin/moc` | **CREATE** | POSIX shell script: preserved direct-use launcher for macOS/Linux and POSIX-capable environments |
+| `bin/moc.js` | **CREATE** | Cross-platform Node.js launcher used by the npm `moc` bin entry, with matching profile/cache behavior |
 
 ### Dependencies
 
 ```
 package.json (bin.moc)
     ↓
-bin/moc                             ← created (shell launcher)
+bin/moc.js                          ← npm bin entry (cross-platform launcher)
+    ↓
+bin/moc                             ← preserved direct shell launcher
     ↓
 .opencode/plugins/provider-profile.mjs  ← exists (plugin generates JSON)
     ↓
@@ -539,7 +545,6 @@ echo 'export OPENCODE_PROVIDER_PROFILE=openai' >> ~/.zshrc
 - Per-agent `variant` or `temperature` overrides per profile
 - Validation that the selected provider is actually configured/available in opencode
 - Plugin discovery or dynamic loading beyond opencode's built-in `plugin` array
-- `moc` launcher supporting Windows (PowerShell/batch) — macOS/Linux only; opencode itself runs on all platforms but the shell-wrapper approach is Unix-native
 - Interactive profile selection menu (`moc` without a profile argument always uses default; no interactive prompt)
 - Profile completion or suggestion in the shell (users can add their own shell completions, but it's out of scope for this contract)
 - `moc` working without `node` on PATH (Node.js is required — opencode itself is a Node.js CLI tool)

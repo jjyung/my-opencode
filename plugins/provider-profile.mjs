@@ -13,9 +13,15 @@ const PROFILE_MAP = Object.freeze({
     heavy_model: "opencode-go/deepseek-v4-pro",
   }),
   openai: Object.freeze({
-    model: "openai/gpt-5.4",
-    small_model: "openai/gpt-5.4-mini",
-    heavy_model: "openai/gpt-5.4",
+    model: "openai/gpt-5.6",
+    small_model: "openai/gpt-5.6-luna",
+    heavy_model: "openai/gpt-5.6",
+    reasoning: Object.freeze({
+      "openai/gpt-5.6-luna": Object.freeze({
+        default_effort: "low",
+        efforts: ["high", "medium", "low"],
+      }),
+    }),
   }),
   google: Object.freeze({
     model: "google/gemini-3.1-pro-preview-customtools",
@@ -23,9 +29,15 @@ const PROFILE_MAP = Object.freeze({
     heavy_model: "google/gemini-3.1-pro-preview-customtools",
   }),
   copilot: Object.freeze({
-    model: "copilot/gpt-5.4",
-    small_model: "copilot/gpt-5.4-mini",
-    heavy_model: "copilot/gpt-5.4",
+    model: "github-copilot/gpt-5.6-sol",
+    small_model: "github-copilot/gpt-5.6-luna",
+    heavy_model: "github-copilot/gpt-5.6-sol",
+    reasoning: Object.freeze({
+      "github-copilot/gpt-5.6-luna": Object.freeze({
+        default_effort: "low",
+        efforts: ["high", "medium", "low"],
+      }),
+    }),
   }),
 });
 
@@ -73,15 +85,58 @@ export default function resolveProfile(options = {}) {
 }
 
 export function buildProfileConfig(options = {}) {
+  const activeProfile = pickProfile(options);
+  const profile = PROFILE_MAP[activeProfile];
   const resolved = resolveProfile(options);
+  const provider = buildProviderOverrides(profile);
 
   return {
     model: resolved.model,
     small_model: resolved.small_model,
+    ...(Object.keys(provider).length > 0 ? { provider } : {}),
     agent: Object.fromEntries(
       ALL_OVERRIDDEN_AGENTS.map((name) => [name, { model: resolved.agent_overrides[name] }]),
     ),
   };
+}
+
+/**
+ * Build the `provider` config fragment for models that need reasoning-effort
+ * variants (e.g. gpt-5.6-luna with high/medium/low effort switching).
+ *
+ * Output shape (merged into opencode config via OPENCODE_CONFIG_CONTENT):
+ *   provider.openai.models["gpt-5.6-luna"] = {
+ *     options: { reasoningEffort: <default_effort> },
+ *     variants: { high: { reasoningEffort: "high" }, ... },
+ *   }
+ */
+function buildProviderOverrides(profile) {
+  if (!profile.reasoning) return {};
+
+  const provider = {};
+  for (const [modelRef, cfg] of Object.entries(profile.reasoning)) {
+    const [providerId, ...rest] = modelRef.split("/");
+    const modelId = rest.join("/");
+    if (!providerId || !modelId) continue;
+
+    const variants = {};
+    for (const effort of cfg.efforts) {
+      variants[effort] = { reasoningEffort: effort };
+    }
+
+    const modelConfig = { variants };
+    if (cfg.default_effort) {
+      modelConfig.options = { reasoningEffort: cfg.default_effort };
+    }
+
+    provider[providerId] = {
+      models: {
+        [modelId]: modelConfig,
+      },
+    };
+  }
+
+  return provider;
 }
 
 function isProviderProfilePlugin(entry) {

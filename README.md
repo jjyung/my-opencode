@@ -85,9 +85,12 @@ npx my-opencode help    # 顯示說明
 | Profile | Primary / heavy | Small / verifier |
 |---------|------------------|------------------|
 | `opencode` | `opencode-go/deepseek-v4-pro` | `opencode-go/deepseek-v4-flash` |
-| `openai` | `openai/gpt-5.4` | `openai/gpt-5.4-mini` |
+| `openai` | `openai/gpt-5.6` | `openai/gpt-5.6-luna` |
 | `google` | `google/gemini-3.1-pro-preview-customtools` | `google/gemini-3.5-flash` |
-| `copilot` | `copilot/gpt-5.4` | `copilot/gpt-5.4-mini` |
+| `copilot` | `github-copilot/gpt-5.6-sol` | `github-copilot/gpt-5.6-luna` |
+
+> 💡 `openai` 與 `copilot` profile 的 `gpt-5.6-luna`（verifier / 小型任務）支援 reasoning effort 切換：
+> **high / medium / low** 三檔（預設 `low`）。在 opencode 內用 `variant_cycle` 快捷鍵循環切換。
 
 ```bash
 # 預設 profile（opencode）

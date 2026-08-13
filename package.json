@@ -26,7 +26,8 @@
     "url": "git+https://github.com/jjyung/my-opencode.git"
   },
   "scripts": {
-    "postinstall": "node scripts/postinstall.js"
+    "postinstall": "node scripts/postinstall.js",
+    "test": "node --test"
   },
   "bin": {
     "my-opencode": "bin/cli.js",

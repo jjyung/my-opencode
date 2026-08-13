@@ -8,9 +8,9 @@ const CONFIG_PATH = path.resolve(__dirname, "..", "opencode.json");
 
 const PROFILE_MAP = Object.freeze({
   opencode: Object.freeze({
-    model: "opencode/big-pickle",
-    small_model: "opencode/deepseek-v4-flash-free",
-    heavy_model: "opencode/big-pickle",
+    model: "opencode-go/deepseek-v4-pro",
+    small_model: "opencode-go/deepseek-v4-flash",
+    heavy_model: "opencode-go/deepseek-v4-pro",
   }),
   openai: Object.freeze({
     model: "openai/gpt-5.4",

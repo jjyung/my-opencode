@@ -15,7 +15,7 @@ opencode plugin 是透過 `opencode.json` 的 `plugin` 區塊註冊的 npm 或�
 
 | Profile | Primary / heavy | Small / verifier |
 |---------|------------------|------------------|
-| `opencode` | `opencode/big-pickle` | `opencode/deepseek-v4-flash-free` |
+| `opencode` | `opencode-go/deepseek-v4-pro` | `opencode-go/deepseek-v4-flash` |
 | `openai` | `openai/gpt-5.4` | `openai/gpt-5.4-mini` |
 | `google` | `google/gemini-3.1-pro-preview-customtools` | `google/gemini-3.5-flash` |
 | `copilot` | `copilot/gpt-5.4` | `copilot/gpt-5.4-mini` |

@@ -118,8 +118,9 @@ function cmdHelp() {
     ✓ 不寫入 package.json
 
   \x1b[1mCOMMANDS\x1b[0m
-  init  [target-dir]  安裝 skills/agents/plugins 到 .opencode/ 下
+  init  [target-dir] [--force]  安裝 skills/agents/plugins 到 .opencode/ 下
                        (預設: 當前目錄的 .opencode/)
+                       --force/-f/--overwrite 覆寫既有檔案 (升級用)
   list                列出可用的 skills 與 agents
   help                顯示此說明
 
@@ -133,6 +134,7 @@ function cmdHelp() {
   npm install my-opencode              # 方法 A (自動)
   npx my-opencode init                 # 方法 B (手動)
   npx my-opencode init ./my-project    # 指定專案目錄
+  npx my-opencode init --force         # 覆寫既有檔案 (升級)
   npx my-opencode list                 # 列出內容
   moc openai                           # 用 openai profile 啟動
 `);
@@ -169,13 +171,17 @@ function cmdList() {
   }
 }
 
-function cmdInit(targetDir) {
+function cmdInit(targetDir, force) {
   // If no target specified, default to .opencode/ in CWD
   const target = targetDir
     ? path.resolve(targetDir, ".opencode")
     : path.resolve(process.cwd(), ".opencode");
 
   header(`Installing my-opencode → ${target}`);
+
+  if (force) {
+    info("--force: overwriting existing files");
+  }
 
   if (!fs.existsSync(target)) {
     fs.mkdirSync(target, { recursive: true });
@@ -192,7 +198,7 @@ function cmdInit(targetDir) {
   for (const s of skills) {
     const src = path.join(SKILLS_DIR, s);
     const dst = path.join(targetSkills, s);
-    copyDirSync(src, dst);
+    copyDirSync(src, dst, force);
     skillCount++;
   }
   success(`Skills: ${skillCount} installed → .opencode/skills/`);
@@ -207,7 +213,7 @@ function cmdInit(targetDir) {
   for (const a of agents) {
     const src = path.join(AGENTS_DIR, a);
     const dst = path.join(targetAgents, a);
-    if (!fs.existsSync(dst)) {
+    if (force || !fs.existsSync(dst)) {
       fs.copyFileSync(src, dst);
       agentCount++;
     } else {
@@ -226,7 +232,7 @@ function cmdInit(targetDir) {
   for (const plugin of plugins) {
     const src = path.join(PLUGINS_DIR, plugin);
     const dst = path.join(targetPlugins, plugin);
-    if (!fs.existsSync(dst)) {
+    if (force || !fs.existsSync(dst)) {
       fs.copyFileSync(src, dst);
       pluginCount++;
     } else {
@@ -237,7 +243,7 @@ function cmdInit(targetDir) {
 
   // ── Generate opencode.json ──────────────────────────────────────────────
   const targetConfig = path.join(target, "opencode.json");
-  if (!fs.existsSync(targetConfig)) {
+  if (force || !fs.existsSync(targetConfig)) {
     try {
       const config = JSON.parse(fs.readFileSync(OPENCODE_CONFIG, "utf-8"));
       fs.writeFileSync(targetConfig, JSON.stringify(config, null, 2) + "\n");
@@ -274,20 +280,35 @@ function cmdInit(targetDir) {
 
 // ─── File Utilities ─────────────────────────────────────────────────────────
 
-function copyDirSync(src, dst) {
+function copyDirSync(src, dst, force) {
   fs.mkdirSync(dst, { recursive: true });
   const entries = fs.readdirSync(src, { withFileTypes: true });
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
     const dstPath = path.join(dst, entry.name);
     if (entry.isDirectory()) {
-      copyDirSync(srcPath, dstPath);
+      copyDirSync(srcPath, dstPath, force);
     } else if (entry.isFile()) {
-      if (!fs.existsSync(dstPath)) {
+      if (force || !fs.existsSync(dstPath)) {
         fs.copyFileSync(srcPath, dstPath);
       }
     }
   }
+}
+
+// ─── Argument parsing ─────────────────────────────────────────────────────────
+
+function parseInitArgs(args) {
+  let targetDir = null;
+  let force = false;
+  for (const arg of args) {
+    if (arg === "--force" || arg === "-f" || arg === "--overwrite") {
+      force = true;
+    } else if (!targetDir && !arg.startsWith("-")) {
+      targetDir = arg;
+    }
+  }
+  return { targetDir, force };
 }
 
 // ─── Main ───────────────────────────────────────────────────────────────────
@@ -298,9 +319,11 @@ function main() {
 
   switch (cmd) {
     case "init":
-    case "install":
-      cmdInit(args[1]);
+    case "install": {
+      const { targetDir, force } = parseInitArgs(args.slice(1));
+      cmdInit(targetDir, force);
       break;
+    }
     case "list":
     case "ls":
       cmdList();
@@ -318,6 +341,7 @@ function main() {
 在專案中執行以下指令來安裝到 \x1b[33m.opencode/\x1b[0m：
 
   \x1b[36mnpx my-opencode init\x1b[0m
+  \x1b[36mnpx my-opencode init --force\x1b[0m   (升級時覆寫既有檔案)
 
 安裝後，將以下內容加入你的 \x1b[33mopencode.json\x1b[0m：
 

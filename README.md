@@ -17,11 +17,28 @@ npx my-opencode init
 
 # 安裝到指定專案
 npx my-opencode init ./my-project
+
+# 覆寫既有檔案（升級用）
+npx my-opencode init --force
 ```
 
 這會在你的專案下建立 `.opencode/`，包含 `skills/`、`agents/`、`plugins/`、`opencode.json`。
 
 opencode 會自動發現 `.opencode/opencode.json`，無需額外設定。
+
+### 升級到最新版
+
+```bash
+# 1. 更新 npm 套件
+npm install my-opencode@latest
+
+# 2. 覆寫既有 .opencode/ 檔案（預設會跳過已存在檔案）
+npx my-opencode init --force
+```
+
+> ⚠️ `init` 預設「已存在就跳過」以保護你客製化的檔案。
+> `--force`（alias `-f` / `--overwrite`）才會覆寫 skills/agents/plugins/opencode.json。
+> 若只想保留自己改過的 `opencode.json`，可先備份再執行 `--force`。
 
 ---
 

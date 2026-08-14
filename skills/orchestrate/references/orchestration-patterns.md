@@ -1,56 +1,49 @@
 # Orchestration Patterns
 
-## Decomposition Strategies
+## Dependency Graph
 
-### By Layer (frontend/backend/infra)
-```
-Frontend (executor)  ─┐
-Backend (executor)    ├─→ Synthesis → Review
-Infra (executor)      ┘
-```
-
-### By Phase (plan/implement/verify)
-```
-Planner ─→ Executor ─→ Verifier
-(sequential pipeline)
-```
-
-### By Concern (feature A / feature B)
-```
-Planner (feature A) ─→ Executor (A) ─→ Verifier (A)  ─┐
-                                                         ├─→ Synthesis
-Planner (feature B) ─→ Executor (B) ─→ Verifier (B)  ─┘
+```text
+Design Evidence → SA → SD ─┐
+                            ├→ Frontend slice ─┐
+                            └→ Backend slice ──┼→ Review → QA/Verify → Synthesis
 ```
 
 ## Agent Dispatch Reference
 
 | Subtask Type | Agent | Max Parallel |
-|-------------|-------|-------------|
-| Architecture/planning | spec-writer | 3 |
-| Implementation | executor | 5 |
+|---|---|---:|
+| Design evidence | design-evidence | 3 |
+| Business requirements | business-analyst | 3 |
+| Technical design | system-designer | 3 |
+| Frontend implementation | frontend-dev | 5 |
+| Backend implementation | backend-dev | 5 |
 | Code review | code-reviewer | 3 |
 | Test generation | test-engineer | 3 |
-| Verification | verifier | 1 |
+| Verification / QA | verifier | 1 |
 
-## Handoff Format
+## Slice Handoff Format
 
-All handoffs in `.handoffs/orchestrate/` follow this structure:
+All orchestration handoffs follow this structure:
 
 ```markdown
 ## Subtask: <name>
 **Agent:** <type>
 **Status:** completed / failed / skipped
 
-### Input
-- <what was given to the agent>
+### Input Artifacts
+- docs/specs/<feature>/README.md
+- docs/specs/<feature>/<role-contract>.md
+
+### Scope and IDs
+- Owner: <agent>
+- Reviewer: <agent>
+- IDs: EVID-001, BR-001, API-001, AC-001, VER-001
 
 ### Output
-- <what the agent produced>
+- <artifact, code, test, or verification result>
 
-### Files Changed
-- path/to/file.ts (modified)
-- path/to/new.test.ts (added)
-
-### Notes
-- <deviations, risks, pending items>
+### Deviations and Risks
+- <deviation, unresolved unknown, or risk>
 ```
+
+Every slice must be independently reviewable and traceable to its upstream artifacts.

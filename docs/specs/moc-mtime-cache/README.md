@@ -197,7 +197,9 @@ Per-profile JSON override exactly as required by `OPENCODE_CONFIG_CONTENT`:
   "model": "google/gemini-3.1-pro-preview-customtools",
   "small_model": "google/gemini-3.5-flash",
   "agent": {
-    "spec-writer": { "model": "google/gemini-3.1-pro-preview-customtools" },
+    "design-evidence": { "model": "google/gemini-3.1-pro-preview-customtools" },
+    "business-analyst": { "model": "google/gemini-3.1-pro-preview-customtools" },
+    "system-designer": { "model": "google/gemini-3.1-pro-preview-customtools" },
     "verifier": { "model": "google/gemini-3.5-flash" },
     "code-reviewer": { "model": "google/gemini-3.1-pro-preview-customtools" },
     "team-lead": { "model": "google/gemini-3.1-pro-preview-customtools" },

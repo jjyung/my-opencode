@@ -9,7 +9,8 @@ Designed for **this repo** (`my-opencode`) — not a generic solution.
 ## Architecture References
 
 - **ADR-001**: Contract-First Development Flow
-- **D2** (design-decisions.md): Pipeline architecture — contract-first
+- **ADR-002**: Evidence-First Role Allocation
+- **D2** (design-decisions.md): Pipeline architecture — evidence-first
 - **D3** (design-decisions.md): Persistent contract + lightweight handoff
 - **P3** (patterns.md): Single source of truth + generated artifacts
 
@@ -50,7 +51,7 @@ The `opencode` default profile uses the **OpenCode Zen provider series** at full
 | FR-3 | System MUST support exactly four profiles: `opencode`, `openai`, `google`, `copilot` | MUST |
 | FR-4 | System MUST update top-level `model` field per the active profile | MUST |
 | FR-5 | System MUST update top-level `small_model` field per the active profile | MUST |
-| FR-6 | System MUST update per-agent `model` overrides for: `spec-writer`, `verifier`, `code-reviewer`, `team-lead`, `architect` | MUST |
+| FR-6 | System MUST update per-agent `model` overrides for: `design-evidence`, `business-analyst`, `system-designer`, `verifier`, `code-reviewer`, `team-lead`, `architect` | MUST |
 | FR-7 | System MUST reject unknown profile values with a clear error message | MUST |
 | FR-8 | System MUST preserve all non-model fields in `opencode.json` (agents, commands, instructions, permissions) | MUST |
 | FR-9 | Plugin SHOULD be loadable via opencode's `plugin` config array as a local file | SHOULD |
@@ -93,7 +94,7 @@ Each profile defines three tiers of model assignment:
 |------|-------|-------------|
 | **primary** | `model` | Default model for agents without an override |
 | **small** | `small_model` | Fast/cheap model for lightweight tasks |
-| **heavy** | agent overrides | Reasoning-heavy agents: spec-writer, code-reviewer, team-lead, architect |
+| **heavy** | agent overrides | Reasoning-heavy agents: design-evidence, business-analyst, system-designer, code-reviewer, team-lead, architect |
 
 ### Profile-to-Model Mapping
 
@@ -108,7 +109,9 @@ Each profile defines three tiers of model assignment:
 
 | Agent | Current override | Profile behavior | Rationale |
 |-------|-----------------|------------------|-----------|
-| `spec-writer` | `opencode/big-pickle` | Uses **heavy** tier from profile | Heavy reasoning (contract generation) |
+| `design-evidence` | `opencode/big-pickle` | Uses **heavy** tier from profile | Source and state interpretation |
+| `business-analyst` | `opencode/big-pickle` | Uses **heavy** tier from profile | Business requirements and acceptance intent |
+| `system-designer` | `opencode/big-pickle` | Uses **heavy** tier from profile | Technical and role contracts |
 | `code-reviewer` | `opencode/big-pickle` | Uses **heavy** tier from profile | Heavy reasoning (5-dimension analysis) |
 | `team-lead` | `opencode/big-pickle` | Uses **heavy** tier from profile | Heavy reasoning (multi-agent orchestration) |
 | `architect` | `opencode/big-pickle` | Uses **heavy** tier from profile | Heavy reasoning (architecture analysis) |
@@ -159,7 +162,9 @@ Direct execution MUST emit a JSON object suitable for `OPENCODE_CONFIG_CONTENT` 
   "model": "provider/model",
   "small_model": "provider/model",
   "agent": {
-    "spec-writer": { "model": "provider/model" },
+    "design-evidence": { "model": "provider/model" },
+    "business-analyst": { "model": "provider/model" },
+    "system-designer": { "model": "provider/model" },
     "verifier": { "model": "provider/model" },
     "code-reviewer": { "model": "provider/model" },
     "team-lead": { "model": "provider/model" },
@@ -175,7 +180,9 @@ Direct execution MUST emit a JSON object suitable for `OPENCODE_CONFIG_CONTENT` 
   model: string,              // Top-level model (e.g. "openai/gpt-5.4" or "opencode/big-pickle")
   small_model: string,        // Top-level small_model
   agent_overrides: {          // Per-agent model overrides to apply
-    "spec-writer": string,
+    "design-evidence": string,
+    "business-analyst": string,
+    "system-designer": string,
     "verifier": string,
     "code-reviewer": string,
     "team-lead": string,
@@ -304,7 +311,9 @@ WHEN OPENCODE_CONFIG_CONTENT is populated from `node plugins/provider-profile.mj
  AND opencode loads the merged configuration
 THEN top-level model MUST be "opencode/big-pickle"
  AND top-level small_model MUST be "opencode/deepseek-v4-flash-free"
- AND spec-writer model MUST be "opencode/big-pickle"
+ AND design-evidence model MUST be "opencode/big-pickle"
+ AND business-analyst model MUST be "opencode/big-pickle"
+ AND system-designer model MUST be "opencode/big-pickle"
  AND verifier model MUST be "opencode/deepseek-v4-flash-free"
  AND other agent models MUST NOT be set (inherit top-level model)
 ```
@@ -316,7 +325,9 @@ WHEN OPENCODE_CONFIG_CONTENT is populated from `node plugins/provider-profile.mj
  AND opencode loads the merged configuration
 THEN top-level model MUST be "openai/gpt-5.4"
  AND top-level small_model MUST be "openai/gpt-5.4-mini"
- AND spec-writer model MUST be "openai/gpt-5.4"
+ AND design-evidence model MUST be "openai/gpt-5.4"
+ AND business-analyst model MUST be "openai/gpt-5.4"
+ AND system-designer model MUST be "openai/gpt-5.4"
  AND verifier model MUST be "openai/gpt-5.4-mini"
 ```
 
@@ -327,7 +338,9 @@ WHEN OPENCODE_CONFIG_CONTENT is populated from `node plugins/provider-profile.mj
  AND opencode loads the merged configuration
 THEN top-level model MUST be "google/gemini-3.1-pro-preview-customtools"
  AND top-level small_model MUST be "google/gemini-3.5-flash"
- AND spec-writer model MUST be "google/gemini-3.1-pro-preview-customtools"
+ AND design-evidence model MUST be "google/gemini-3.1-pro-preview-customtools"
+ AND business-analyst model MUST be "google/gemini-3.1-pro-preview-customtools"
+ AND system-designer model MUST be "google/gemini-3.1-pro-preview-customtools"
  AND verifier model MUST be "google/gemini-3.5-flash"
 ```
 
@@ -338,7 +351,9 @@ WHEN OPENCODE_CONFIG_CONTENT is populated from `node plugins/provider-profile.mj
  AND opencode loads the merged configuration
 THEN top-level model MUST be "copilot/gpt-5.4"
  AND top-level small_model MUST be "copilot/gpt-5.4-mini"
- AND spec-writer model MUST be "copilot/gpt-5.4"
+ AND design-evidence model MUST be "copilot/gpt-5.4"
+ AND business-analyst model MUST be "copilot/gpt-5.4"
+ AND system-designer model MUST be "copilot/gpt-5.4"
  AND verifier model MUST be "copilot/gpt-5.4-mini"
 ```
 
@@ -365,7 +380,7 @@ WHEN the plugin applies profile overrides
 THEN the commands block MUST remain unchanged
  AND the agents block MUST retain all tool permissions, prompts, and descriptions
  AND the instructions list MUST remain unchanged
- AND the default_agent MUST remain "fullstack-dev"
+ AND the default_agent MUST be "team-lead"
 ```
 
 ### AC-8: `moc` without args uses default profile

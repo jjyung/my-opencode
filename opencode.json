@@ -2,23 +2,24 @@
   "$schema": "https://opencode.ai/config.json",
   "model": "opencode-go/deepseek-v4-pro",
   "small_model": "opencode-go/deepseek-v4-flash",
-  "default_agent": "fullstack-dev",
+  "default_agent": "team-lead",
   "instructions": [
     "skills/adr/SKILL.md",
     "skills/dev-flow/SKILL.md",
     "skills/pr-review/SKILL.md",
     "skills/test-gen/SKILL.md",
     "skills/docs-gen/SKILL.md",
-    "skills/orchestrate/SKILL.md"
+    "skills/orchestrate/SKILL.md",
+    "skills/design-evidence/SKILL.md"
   ],
   "plugin": [
     "plugins/provider-profile.mjs"
   ],
   "agent": {
-    "fullstack-dev": {
-      "description": "Primary development agent. Orchestrates contract-first ADR → contract → code → verify flow.",
+    "team-lead": {
+      "description": "Primary delivery orchestrator. Coordinates Design Evidence → SA → SD → Frontend/Backend → Review → Verify.",
       "mode": "primary",
-      "prompt": "{file:agents/fullstack-dev.md}",
+      "prompt": "{file:agents/team-lead.md}",
       "permission": {
         "task": "ask"
       },
@@ -29,11 +30,11 @@
         "bash": true
       }
     },
-    "spec-writer": {
-      "description": "Analyze requirements and produce contract specifications in docs/specs/. Writes persistent contracts for parallel development.",
+    "design-evidence": {
+      "description": "Extract source-backed Design Evidence Packs from Figma, screenshots, wireframes, and prototypes.",
       "mode": "subagent",
       "model": "opencode-go/deepseek-v4-pro",
-      "prompt": "{file:agents/spec-writer.md}",
+      "prompt": "{file:agents/design-evidence.md}",
       "tools": {
         "read": true,
         "bash": true,
@@ -41,10 +42,45 @@
         "edit": true
       }
     },
-    "executor": {
-      "description": "Implement code changes following an approved contract. Full read/write access for coding.",
+    "business-analyst": {
+      "description": "SA role: translate evidence into business requirements, rules, states, data meaning, and acceptance intent.",
       "mode": "subagent",
-      "prompt": "{file:agents/executor.md}",
+      "model": "opencode-go/deepseek-v4-pro",
+      "prompt": "{file:agents/business-analyst.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "system-designer": {
+      "description": "SD role: translate business requirements into technical, API, data, security, and operational contracts.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "prompt": "{file:agents/system-designer.md}",
+      "tools": {
+        "read": true,
+        "bash": true,
+        "write": true,
+        "edit": true
+      }
+    },
+    "frontend-dev": {
+      "description": "Implement frontend routes, interactions, state, accessibility, and visual acceptance from approved contracts.",
+      "mode": "subagent",
+      "prompt": "{file:agents/frontend-dev.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "backend-dev": {
+      "description": "Implement backend APIs, domain logic, persistence, authorization, integrations, and observability from approved contracts.",
+      "mode": "subagent",
+      "prompt": "{file:agents/backend-dev.md}",
       "tools": {
         "read": true,
         "write": true,
@@ -98,18 +134,6 @@
         "bash": true
       }
     },
-    "team-lead": {
-      "description": "Multi-agent orchestrator for complex tasks. Delegates to architect, spec-writer, executor, code-reviewer, test-engineer, verifier.",
-      "mode": "subagent",
-      "model": "opencode-go/deepseek-v4-pro",
-      "prompt": "{file:agents/team-lead.md}",
-      "tools": {
-        "read": true,
-        "write": true,
-        "edit": true,
-        "bash": true
-      }
-    },
     "architect": {
       "description": "Capture architecture decisions as ADR documents. Analyzes tradeoffs and records context.",
       "mode": "subagent",
@@ -124,11 +148,35 @@
     }
   },
   "command": {
-    "spec": {
-      "description": "Create a contract specification in docs/specs/ — source of truth for implementation",
-      "agent": "spec-writer",
+    "evidence": {
+      "description": "Create a source-backed Design Evidence Pack in docs/specs/<feature>/",
+      "agent": "design-evidence",
       "subtask": true,
-      "template": "Analyze the request and produce a contract specification document.\n\n$ARGUMENTS"
+      "template": "Extract the Design Evidence Pack for this feature. Record sources, observed/inferred/unknown evidence, confidence, and intake metadata.\n\n$ARGUMENTS"
+    },
+    "business-spec": {
+      "description": "Create business requirements from an approved Design Evidence Pack",
+      "agent": "business-analyst",
+      "subtask": true,
+      "template": "Read the feature intake and evidence pack, then produce business requirements, rules, states, business data definitions, acceptance intent, and traceability IDs.\n\n$ARGUMENTS"
+    },
+    "technical-design": {
+      "description": "Create technical, frontend, and backend contracts from approved business requirements",
+      "agent": "system-designer",
+      "subtask": true,
+      "template": "Read the evidence pack and business requirements, then produce technical design, frontend contract, backend contract, and traceability mappings.\n\n$ARGUMENTS"
+    },
+    "frontend": {
+      "description": "Implement a frontend slice from its approved contract",
+      "agent": "frontend-dev",
+      "subtask": true,
+      "template": "Implement the approved frontend slice and report its requirement, API, and verification IDs.\n\n$ARGUMENTS"
+    },
+    "backend": {
+      "description": "Implement a backend slice from its approved contract",
+      "agent": "backend-dev",
+      "subtask": true,
+      "template": "Implement the approved backend slice and report its requirement, API, data, and verification IDs.\n\n$ARGUMENTS"
     },
     "review": {
       "description": "Review code changes across 5 dimensions (correctness, security, quality, testing, style)",

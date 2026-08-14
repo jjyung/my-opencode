@@ -11,27 +11,39 @@ my-opencode/
 └── docs/         # 設計文件、ADR、參考筆記
 ```
 
-所有 skill 與 agent 透過 `opencode.json` 註冊整合。
+所有 skill 與 agent 透過 `opencode.json` 註冊整合。新功能採 evidence-first 流程：Design Evidence → SA → SD → Frontend/Backend → Review → Verify。
 
 ## 貢獻方式
 
 ### 新增 Skill
+
 1. 在 `skills/` 下建立新目錄（kebab-case）
 2. 撰寫 `SKILL.md`，遵循 frontmatter 格式
 3. 如需參考文件，放在 `references/` 下
 4. 在 `opencode.json` 的 `instructions` 中加入路徑
 
 ### 新增 Agent
+
 1. 在 `agents/` 下建立 `.md` 檔案
 2. 遵循 frontmatter 規格（name, description, model, tools, color）
 3. 在 `opencode.json` 的 `agent` 區塊註冊
 4. 如需暴露為指令，在 `command` 區塊註冊
 
+角色責任：
+
+- `design-evidence` 只整理有來源的設計觀察，不決定業務或技術語意。
+- `business-analyst`（SA）只定義 actor、use case、business rule、state 與 acceptance intent。
+- `system-designer`（SD）將業務能力轉成 API、資料、安全與運維契約。
+- `frontend-dev`／`backend-dev` 只實作已核准的角色契約，按 slice 交付。
+- `verifier` 負責 business、visual/interaction、API/data、security/operations 與機械檢查。
+
 ### 新增 ADR
+
 當架構決策影響專案方向時，在 `docs/adr/` 新增記錄。
 參考 `skills/adr/references/templates.md` 格式。
 
 ### 報告問題
+
 - 提供重現步驟
 - 附上相關 opencode.json 設定片段
 - 標明 opencode 版本
@@ -39,7 +51,7 @@ my-opencode/
 ## 規範
 
 | 項目 | 規範 |
-|------|------|
+| ------ | ------ |
 | Skill 名稱 | kebab-case，description 不含 "and" |
 | Agent 名稱 | kebab-case |
 | SKILL.md 內容 | 英文 |
@@ -54,10 +66,12 @@ my-opencode/
 
 1. `opencode.json` 所有 agent / command / instruction 參考有效
 2. 所有 `.md` frontmatter 格式正確
-3. 無殘留除錯內容或機密資訊
-4. 目錄結構與 `opencode.json` 一致
+3. 已移除的舊角色（`fullstack-dev`、`spec-writer`、`executor`）不得出現在 registry、active skill 或現行流程文件中
+4. 無殘留除錯內容或機密資訊
+5. 目錄結構與 `opencode.json` 一致
 
 快速檢查：
+
 ```bash
 # 檢查 JSON 語法
 python3 -c "import json; json.load(open('opencode.json'))"
@@ -99,6 +113,7 @@ main        ─── 穩定版本，只從 feature branch merge
 - `main` 永遠保持可發布狀態
 - 功能開發在 feature branch 進行，完成後 squash merge 到 main
 - commit message 建議用 [Conventional Commits](https://www.conventionalcommits.org/)：
+
   ```
   feat: 新增 XXX skill
   fix: 修正 YYY agent 路徑錯誤
@@ -109,7 +124,7 @@ main        ─── 穩定版本，只從 feature branch merge
 ### 版本號規則（SemVer）
 
 | 變動類型 | 版本 increment | 範例 |
-|---------|---------------|------|
+| --------- | --------------- | ------ |
 | 向下不相容的變更 | `major` | 1.0.0 → 2.0.0 |
 | 新增功能（向下相容） | `minor` | 1.0.0 → 1.1.0 |
 | Bug 修復或小調整 | `patch` | 1.0.0 → 1.0.1 |

@@ -131,6 +131,31 @@ opencode
 
 此 tuple 會覆寫 `OPENCODE_PROVIDER_PROFILE`。
 
+## Evidence-First Development
+
+新功能依序經過 Design Evidence、SA、SD、Frontend/Backend slices、Review 與 Verify：
+
+```text
+Design Evidence → Business Requirements → Technical Design
+                                      ├→ Frontend slice
+                                      └→ Backend slice
+                                               ↓
+                                      Review → QA / Verify
+```
+
+可用的專用 commands：
+
+```text
+/evidence           # 建立 evidence-pack.md
+/business-spec      # 建立 SA business-requirements.md
+/technical-design   # 建立 SD technical/frontend/backend contracts
+/frontend           # 實作 frontend slice
+/backend            # 實作 backend slice
+/verify             # 執行四層 QA 與機械驗證
+```
+
+每個 feature 的持久文件位於 `docs/specs/<feature>/`，使用 `EVID-*`、`BR-*`、`API-*`、`DATA-*`、`AC-*`、`VER-*` 互相追蹤。Screenshot-only 或 wireframe-only 輸入必須標成 `prototype`，不可直接視為 implementation-ready。
+
 ### 發布（維護者專用）
 
 #### Token 設定
@@ -202,7 +227,7 @@ git submodule update --init --recursive
 ## 目標
 
 1. **提煉通用流程** — 從上述專案中萃取「開發者真正需要的」工作流程模式，轉化為 opencode skill
-2. **Contract-First** — 以合約文件（ADR + Spec）為源頭真相，取代一次性 handoff，支援前後端平行開發
+2. **Evidence-First** — 先將設計輸入整理為有來源的 Evidence Pack，再由 SA／SD 形成持久契約，支援前後端平行開發
 3. **模組化設計** — 每個 skill 單一職責、可組合、可替換，避免大而全的 monolith
 4. **opencode 原生** — 充分利用 opencode 的 skill/subagent/permission/MCP 機制，而非直接移植他廠格式
 5. **團隊協作就緒** — 支援 adr → contract → code → review → verify → deploy 的完整開發生命週期
@@ -226,20 +251,23 @@ my-opencode/
 │   └── design-decisions.md  # opencode 生態取捨
 ├── skills/                  # opencode skill（單一職責）
 │   ├── adr/                 # [done] ADR：架構決策記錄
-│   ├── dev-flow/            # [done] 開發流程：contract → code → verify
+│   ├── dev-flow/            # [done] 開發流程：evidence → SA → SD → code → verify
+│   ├── design-evidence/     # [new] Design Evidence Pack 規範
 │   ├── pr-review/           # [done] PR 審查：5 維度分析
 │   ├── test-gen/            # [done] 測試生成：框架偵測 + 多語言模式
 │   ├── orchestrate/          # [done] 多 agent 編排：分解、平行派送、綜合
 │   └── docs-gen/             # [done] 文件生成：註解、API、README、ADR
 ├── agents/                  # 組合多個 skill 的完整 agent
 │   ├── architect.md         # [new] 架構師 agent（ADR 產生）
-│   ├── spec-writer.md       # 規格 agent（合約文件 → docs/specs/）
-│   ├── executor.md          # 實作 agent（讀寫）
+│   ├── design-evidence.md   # Design Evidence Pack 萃取
+│   ├── business-analyst.md  # SA 業務需求與 acceptance intent
+│   ├── system-designer.md   # SD 技術設計與角色契約
+│   ├── frontend-dev.md      # Frontend slice 實作
+│   ├── backend-dev.md       # Backend slice 實作
 │   ├── verifier.md          # 驗證 agent（唯讀+Bash）
 │   ├── code-reviewer.md     # 程式碼審查 agent（唯讀）
 │   ├── test-engineer.md     # 測試工程師 agent（讀寫）
 │   ├── tech-writer.md       # 技術文件 agent（讀寫）
-│   ├── fullstack-dev.md     # 全端開發 agent（編排三者）
 │   └── team-lead.md         # 技術主管 agent（多 agent 交響樂指揮）
 ├── CONTRIBUTING.md          # 貢獻指南
 ├── LICENSE                  # MIT License
@@ -266,14 +294,15 @@ my-opencode/
 - [x] ref/ 參考專案 submodule（6 個）
 - [x] docs/ 探索紀錄（6 份 notes + patterns.md + design-decisions.md）
 - [x] skill: adr（架構決策記錄，Michael Nygard 輕量格式）
-- [x] skill: dev-flow（開發流程，含 architecture → contract → code → verify）
-- [x] agents: spec-writer, executor, verifier, fullstack-dev, code-reviewer, test-engineer, team-lead, architect
+- [x] skill: dev-flow（開發流程，含 evidence → SA → SD → role contracts → code → verify）
+- [x] skill: design-evidence（設計輸入、信心與 traceability）
+- [x] agents: design-evidence, business-analyst, system-designer, frontend-dev, backend-dev, verifier, code-reviewer, test-engineer, team-lead, architect
 - [x] skill: pr-review（PR 審查，含 5 維度分析 + 安全檢查表）
 - [x] skill: test-gen（測試生成，含框架偵測 + 多語言測試模式）
 - [x] skill: orchestrate（多 agent 編排）
 - [x] skill: docs-gen（文件生成，含多語言註解風格 + ADR/CHANGELOG 範本）
 - [x] agent: tech-writer
-- [x] opencode.json 整合設定（含 9 個 agent + 7 個 command）
+- [x] opencode.json 整合設定（含 11 個 agent + 11 個 command）
 - [x] CONTRIBUTING.md / LICENSE / plugins / templates
 - [ ] 自我驗證：用本工具跑自己的開發流程
 

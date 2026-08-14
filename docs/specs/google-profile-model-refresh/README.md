@@ -114,7 +114,9 @@ GIVEN the provider-profile plugin is registered in opencode.json
   AND the plugin resolves the profile
  THEN top-level model MUST be "google/gemini-3.1-pro-preview-customtools"
   AND top-level small_model MUST be "google/gemini-3.5-flash"
-  AND spec-writer model MUST be "google/gemini-3.1-pro-preview-customtools"
+  AND design-evidence model MUST be "google/gemini-3.1-pro-preview-customtools"
+  AND business-analyst model MUST be "google/gemini-3.1-pro-preview-customtools"
+  AND system-designer model MUST be "google/gemini-3.1-pro-preview-customtools"
   AND verifier model MUST be "google/gemini-3.5-flash"
   AND code-reviewer model MUST be "google/gemini-3.1-pro-preview-customtools"
   AND team-lead model MUST be "google/gemini-3.1-pro-preview-customtools"
@@ -129,7 +131,9 @@ GIVEN OPENCODE_PROVIDER_PROFILE=google
  THEN the emitted JSON MUST contain:
    "model": "google/gemini-3.1-pro-preview-customtools"
    "small_model": "google/gemini-3.5-flash"
-   "agent.spec-writer.model": "google/gemini-3.1-pro-preview-customtools"
+   "agent.design-evidence.model": "google/gemini-3.1-pro-preview-customtools"
+   "agent.business-analyst.model": "google/gemini-3.1-pro-preview-customtools"
+   "agent.system-designer.model": "google/gemini-3.1-pro-preview-customtools"
    "agent.verifier.model": "google/gemini-3.5-flash"
 ```
 

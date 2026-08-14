@@ -18,18 +18,20 @@
 
 ## D2. Pipeline 架構
 
-**決定：** Contract-first 四階段流程，參考 Ralph pipeline 的 PRD 理念但分離為 ADR + Contract。
+**決定：** Evidence-first 分層流程，保留 ADR + persistent contracts，但在需求之前加入 Design Evidence Pack。
 
 ```
-[ADR] → Contract → Code → Verify → Fix (loop)
+[ADR] → Evidence → Business Requirements → Technical Design → Role Contracts → Code → Verify → Fix (loop)
 ```
 
 - Phase 0 (optional): Architecture Decision Record (why)
-- Phase 1: Contract Specification (what — persistent, committed)
-- Phase 2: Code (implement against contract)
-- Phase 3: Verify (against acceptance criteria from Phase 1)
+- Phase 1: Design Evidence (what is visible, with source and confidence)
+- Phase 2: Business Requirements (what the business must do)
+- Phase 3: Technical Design (how the system provides it)
+- Phase 4: Role Contracts and sliced implementation
+- Phase 5: Verify against business, visual, API/data, security/operations, and mechanical criteria
 
-**改變歷程：** 最初參考 oh-my-claudecode 做 `plan → code → verify`，後改為 contract-first 模式。核心 insight：plan 階段的產出不該是臨時的 handoff，而是長期存在的源頭真相。
+**改變歷程：** 最初參考 oh-my-claudecode 做 `plan → code → verify`，後改為 contract-first，再加入 Design Evidence Pack。核心 insight：視覺輸入不能直接成為需求或技術決策，必須先保留來源、信心與未知事項。
 
 **不採用** oh-my-claudecode 的 8 種模式，專注於一個紮實的預設流程。
 
@@ -67,7 +69,7 @@ model: sonnet # 或 opus, haiku, inherit
 // opencode.json 覆寫
 {
   "agents": {
-    "spec-writer": { "model": "anthropic/claude-opus-4-5" }
+    "system-designer": { "model": "anthropic/claude-opus-4-5" }
   }
 }
 ```
@@ -83,7 +85,7 @@ model: sonnet # 或 opus, haiku, inherit
 ```json
 {
   "agents": {
-    "spec-writer": {
+    "system-designer": {
       "tools": { "read": true, "bash": true, "write": true, "edit": true }
     }
   }
@@ -94,8 +96,10 @@ model: sonnet # 或 opus, haiku, inherit
 
 | Agent | 寫入範圍 | 說明 |
 |-------|----------|------|
-| spec-writer | `docs/specs/` | 寫 contract |
-| executor | 任意 | 寫程式碼 |
+| design-evidence | `docs/specs/<feature>/evidence-pack.md` | 寫有來源的設計證據 |
+| business-analyst | `docs/specs/<feature>/business-requirements.md` | 寫 SA 業務契約 |
+| system-designer | `docs/specs/<feature>/technical-design.md` | 寫 SD 技術契約 |
+| frontend-dev / backend-dev | 任意 | 寫各自 implementation slice |
 | architect | `docs/adr/` | 寫 ADR |
 | verifier | 不寫入 | 唯讀 + bash 執行測試 |
 | code-reviewer | 不寫入 | 唯讀審查 |
@@ -161,7 +165,7 @@ model: sonnet # 或 opus, haiku, inherit
 | 項目             | 慣例       | 範例                    |
 | ---------------- | ---------- | ----------------------- |
 | Skill 目錄       | kebab-case | `dev-flow`, `pr-review` |
-| Agent 檔案       | kebab-case | `fullstack-dev.md`      |
+| Agent 檔案       | kebab-case | `frontend-dev.md`       |
 | SKILL.md         | 固定名稱   | `SKILL.md`              |
 | Frontmatter name | kebab-case | `name: dev-flow`        |
 
@@ -203,3 +207,21 @@ model: sonnet # 或 opus, haiku, inherit
 | 平行開發 | 前後端可參考同一份實作 | 不支援 |
 
 **關鍵原則：** 如果一份文件在 feature 完成後還有價值 → 放 `docs/`（contract）。如果只對當前 session 有用 → 放 `.handoffs/`。
+
+---
+
+## D14. Evidence-First Role Allocation
+
+**決定：** 將設計輸入、業務語意、技術契約、角色實作與驗證分成明確 owner。
+
+```text
+Design Evidence → SA → SD → Frontend / Backend → Review → QA / Verify
+```
+
+- `design-evidence` 只記錄 observed / inferred / unknown，不做業務或 API 決策。
+- `business-analyst` 定義 actor、use case、business rule、state 與 acceptance intent。
+- `system-designer` 定義 system boundary、API、資料、安全與 operational constraints。
+- `frontend-dev` 與 `backend-dev` 從同一份 Technical Design 產生可平行 review 的 slices。
+- `verifier` 驗證 Business、Visual/Interaction、API/Data、Security/Operations 與 lint/typecheck/test/build。
+
+每個 feature 使用 `EVID-*`、`BR-*`、`BUS-*`、`API-*`、`DATA-*`、`AC-*`、`VER-*` 互相追蹤。長期有效的 evidence、契約、traceability 與 verification report 放在 `docs/specs/<feature>/`。

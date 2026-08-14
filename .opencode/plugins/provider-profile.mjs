@@ -42,7 +42,14 @@ const PROFILE_MAP = Object.freeze({
 });
 
 const SUPPORTED_PROFILES = Object.keys(PROFILE_MAP);
-const HEAVY_AGENTS = ["spec-writer", "code-reviewer", "team-lead", "architect"];
+const HEAVY_AGENTS = [
+  "design-evidence",
+  "business-analyst",
+  "system-designer",
+  "code-reviewer",
+  "team-lead",
+  "architect",
+];
 const ALL_OVERRIDDEN_AGENTS = [...HEAVY_AGENTS, "verifier"];
 
 function normalizeProfileValue(value) {
@@ -75,7 +82,9 @@ export default function resolveProfile(options = {}) {
     model: profile.model,
     small_model: profile.small_model,
     agent_overrides: {
-      "spec-writer": profile.heavy_model,
+      "design-evidence": profile.heavy_model,
+      "business-analyst": profile.heavy_model,
+      "system-designer": profile.heavy_model,
       verifier: profile.small_model,
       "code-reviewer": profile.heavy_model,
       "team-lead": profile.heavy_model,

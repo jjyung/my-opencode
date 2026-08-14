@@ -38,7 +38,14 @@ const EXPECTED = {
   },
 };
 
-const HEAVY_AGENTS = ["spec-writer", "code-reviewer", "team-lead", "architect"];
+const HEAVY_AGENTS = [
+  "design-evidence",
+  "business-analyst",
+  "system-designer",
+  "code-reviewer",
+  "team-lead",
+  "architect",
+];
 
 // ── Env isolation ───────────────────────────────────────────────────────────
 
@@ -129,14 +136,16 @@ describe("T-3 agent_overrides mapping", () => {
 // ── T-4: buildProfileConfig output shape ────────────────────────────────────
 
 describe("T-4 buildProfileConfig output shape", () => {
-  test("T-4.1 opencode has no provider key and 5 overridden agents", () => {
+  test("T-4.1 opencode has no provider key and 7 overridden agents", () => {
     const config = buildProfileConfig({ profile: "opencode" });
     assert.equal(config.model, EXPECTED.opencode.model);
     assert.equal("provider" in config, false);
     assert.deepEqual(Object.keys(config.agent).sort(), [
       "architect",
+      "business-analyst",
       "code-reviewer",
-      "spec-writer",
+      "design-evidence",
+      "system-designer",
       "team-lead",
       "verifier",
     ]);

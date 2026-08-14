@@ -268,7 +268,8 @@ function cmdInit(targetDir, force) {
   console.log(`${INDENT}    ".opencode/skills/pr-review/SKILL.md",`);
   console.log(`${INDENT}    ".opencode/skills/test-gen/SKILL.md",`);
   console.log(`${INDENT}    ".opencode/skills/docs-gen/SKILL.md",`);
-  console.log(`${INDENT}    ".opencode/skills/orchestrate/SKILL.md"`);
+  console.log(`${INDENT}    ".opencode/skills/orchestrate/SKILL.md",`);
+  console.log(`${INDENT}    ".opencode/skills/design-evidence/SKILL.md"`);
   console.log(`${INDENT}  ]`);
   console.log();
   console.log(`${INDENT}Agents, commands, and plugins from .opencode/opencode.json`);
@@ -351,7 +352,8 @@ function main() {
     ".opencode/skills/pr-review/SKILL.md",
     ".opencode/skills/test-gen/SKILL.md",
     ".opencode/skills/docs-gen/SKILL.md",
-    ".opencode/skills/orchestrate/SKILL.md"
+    ".opencode/skills/orchestrate/SKILL.md",
+    ".opencode/skills/design-evidence/SKILL.md"
   ]\x1b[0m
 
 更多資訊請執行：\x1b[36mnpx my-opencode help\x1b[0m

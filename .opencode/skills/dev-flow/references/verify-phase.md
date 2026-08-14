@@ -1,129 +1,70 @@
-# Verify Phase — Detailed Workflow
+# QA and Verification Phase
 
 ## Entry Conditions
 
-- Code handoff exists at `.handoffs/dev-flow/code.md`
-- Code changes have been implemented
+- Feature artifacts and implementation handoffs exist.
+- Frontend/backend slices have completed review.
 
-## Process
+## Verification Order
 
-Run verification steps in order. Stop at first failure and report.
+### 1. Contract Traceability
 
-### 1. Detect Project Type
-- Look for `package.json` → Node.js project
-- Look for `Cargo.toml` → Rust project
-- Look for `pyproject.toml` / `requirements.txt` → Python project
-- Look for `go.mod` → Go project
-- Use `ls` on project root to detect
+- Read `evidence-pack.md`, `business-requirements.md`, `technical-design.md`, role contracts, and `traceability.md`.
+- Confirm each UI action maps to evidence, business rule, API/data effect, and verification.
+- Mark missing permission, state, source, or error decisions as blockers.
 
-### 2. Run Lint
-```
-# Node
-npm run lint        # or yarn lint, pnpm lint
+### 2. Business
 
-# Rust
-cargo clippy
+Verify use cases, business rules, states, negative paths, duplicate/retry behavior, and acceptance intent.
 
-# Python
-ruff check .        # or flake8, pylint
+### 3. Visual / Interaction
 
-# Go
-go vet ./...
-```
+Verify approved design, state inventory, responsive behavior, keyboard/focus behavior, semantic structure, and accessibility.
 
-**Pass condition:** Exit code 0, no errors.
-**Fail:** Record lint errors in handoff.
+### 4. API / Data
 
-### 3. Run Typecheck (if applicable)
-```
-# TypeScript
-npx tsc --noEmit    # or npm run typecheck
+Verify request/response/error schemas, persistence, query patterns, pagination, and contract tests.
 
-# Rust
-cargo check
+### 5. Security / Operations
 
-# Python (pyright/mypy)
-pyright .
-mypy .
-```
+Verify authorization and scope, audit, performance targets, observability, migration, and rollback.
 
-**Pass condition:** Exit code 0, no type errors.
+### 6. Mechanical Checks
 
-### 4. Run Tests
-```
-# Find test command from package.json scripts or common conventions
+Detect project type and run lint, typecheck, tests, and build. Stop at the first blocking failure and record exact output.
 
-# Node
-npm test            # or npm run test
+## Output
 
-# Rust
-cargo test
-
-# Python
-pytest              # or python -m pytest
-
-# Go
-go test ./...
-```
-
-**Pass condition:** All tests pass.
-**Fail:** Record which tests failed and their output.
-
-### 5. Run Build (if applicable)
-```
-# Node
-npm run build       # or npm run build:prod
-
-# Rust
-cargo build
-
-# Go
-go build ./...
-```
-
-**Pass condition:** Exit code 0, build succeeds.
-
-### 6. Output Handoff
-
-Write to `.handoffs/dev-flow/verify.md`:
+Return a structured report to `team-lead`. The orchestrator persists the final report at `docs/specs/<feature>/verification-report.md`:
 
 ```markdown
-# Verification: <title>
+# Verification Report: <feature>
 
 ## Results
 
+| ID | Layer | Status | Evidence |
+|----|-------|--------|----------|
+| VER-001 | Business | Pass / Fail | <details> |
+
+## Mechanical Checks
+
 | Check | Status | Details |
 |-------|--------|---------|
-| Lint | ✅ Pass / ❌ Fail | <details> |
-| Typecheck | ✅ Pass / ❌ Fail / ⏭ Skip | <details> |
-| Tests | ✅ Pass / ❌ Fail | <details> |
-| Build | ✅ Pass / ❌ Fail / ⏭ Skip | <details> |
+| Lint | Pass / Fail / Skip | <details> |
+| Typecheck | Pass / Fail / Skip | <details> |
+| Tests | Pass / Fail / Skip | <details> |
+| Build | Pass / Fail / Skip | <details> |
 
 ## Overall Verdict
 
-**PASS** — All checks passed. Changes are ready.
-
-or
-
-**NEEDS FIX** — <summary of failures, max 3 bullet points>
-
-## Fix Loop Info
-- Attempt: <1/3, 2/3, 3/3>
-- Previous failures: <list>
+PASS or NEEDS FIX
 ```
 
 ## Fix Loop
 
-If verification fails:
-1. Read `verify.md` to understand failures
-2. Return to Code phase to fix
-3. Re-verify after fixes
-4. Max 3 fix attempts total
+1. Identify the failing ID and owning layer.
+2. Update the contract if the contract is wrong.
+3. Fix the bounded implementation slice.
+4. Re-run review and verification.
 
-## Anti-Patterns
-
-- ❌ Skipping verification for "trivial" changes
-- ❌ Not running the actual test command (guessing)
-- ❌ Ignoring test failures that seem unrelated
-- ❌ Exceeding max fix loops without asking user
-- ❌ Not detecting the correct project type
+Allow at most three attempts before reporting the blocker.

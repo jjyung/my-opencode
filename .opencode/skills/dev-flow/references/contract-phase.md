@@ -1,81 +1,66 @@
-# Contract Phase — Detailed Workflow
+# Layered Contract Phase
 
-The Contract phase replaces the old Plan phase. It produces **persistent, committed** specification documents instead of temporary handoffs.
+The contract phase produces persistent, committed artifacts. It does not use a temporary plan as the source of truth.
 
 ## Entry Conditions
 
-- User request received (feature, bug, refactor)
-- Dev-flow skill activated
-- Optional: ADRs exist in `docs/adr/` that constrain this feature
+- User request received.
+- Relevant ADRs have been checked.
+- Feature ID, source/version, owner, and scope are known or explicitly marked unknown.
 
-## Analysis Process
+## Artifact Set
 
-### 1. Understand the Request
-- Read the user's request carefully
-- Ask clarifying questions if ambiguous (one at a time, with rationale)
-- Identify the core goal, not just the surface request
+Create `docs/specs/<feature>/` with:
 
-### 2. Check Existing ADRs
-- Read `docs/adr/README.md` for index
-- Identify relevant ADRs that constrain or inform this feature
-- Reference ADR numbers in the contract document
-
-### 3. Explore the Codebase
-- Read relevant files to understand current state
-- Use Grep/Glob to find related code
-- Identify patterns and conventions
-
-### 4. Specify the Contract
-
-Write to `docs/specs/<feature>/README.md`:
-
-```markdown
-# Feature: <title>
-
-## Requirements
-FR-1: System MUST <behavior>
-FR-2: System SHOULD <behavior>
-FR-3: System MAY <behavior>
-
-## Acceptance Criteria
-- GIVEN <context> WHEN <action> THEN <expected result>
-
-## API Contract
-- POST /api/xxx
-  Request: { field: type }
-  Response: { field: type }
-
-## Data Model
-| Entity | Field | Type | Constraints |
-
-## Out of Scope
-- <explicit exclusions>
-
-## Architecture References
-- ADR-001: <title>
-- ADR-003: <title>
+```text
+README.md
+evidence-pack.md
+business-requirements.md
+technical-design.md
+frontend-contract.md
+backend-contract.md
+traceability.md
 ```
 
-### 5. User Review
-- Present contract to user
-- Ask: "Does this contract look correct? Ready to implement?"
-- Wait for approval before proceeding to Code phase
+Create `verification-report.md` at delivery time.
 
-## Key Differences from Old Plan Phase
+## Layer Rules
 
-| Aspect | Old Plan (handoff) | New Contract (persistent) |
-|--------|-------------------|--------------------------|
-| Location | `.handoffs/dev-flow/plan.md` | `docs/specs/<feature>/README.md` |
-| Persistence | Temporary (gitignored) | Committed to repo |
-| Audience | Next phase only | All current and future developers |
-| Granularity | Implementation steps | Requirements + ACs + API |
-| Parallel work | Not supported | Frontend/backend can work in parallel |
-| ADR integration | None | Explicit reference |
+### Intake and Evidence
+
+`README.md` records source type, source version, viewport, approval/prototype status, owner, scope, and out-of-scope items. `evidence-pack.md` contains stable `EVID-*` records with source, type, confidence, and separate observed/inferred/unknown fields.
+
+### Business Requirements
+
+`business-requirements.md` is owned by `business-analyst` and contains actors, goals, use cases, business rules, business states, business data meaning, and `AC-*` acceptance intent. Every item links to `EVID-*`.
+
+### Technical Design
+
+`technical-design.md` is owned by `system-designer` and contains boundaries, API, data, authorization, errors, performance, audit, observability, migration, rollback, and compatibility. It assigns `API-*`, `DATA-*`, and `NFR-*` IDs.
+
+The same technical design produces `frontend-contract.md` and `backend-contract.md`; these are role views, not independent interpretations of the evidence.
+
+### Traceability
+
+`traceability.md` links at minimum:
+
+```text
+UI action → EVID-* → BR-* / BUS-* → API-* / DATA-* → AC-* / VER-*
+```
+
+## Review Gate
+
+Before implementation, confirm:
+
+- Evidence sources and confidence are recorded.
+- Observations, inferences, and unknowns are separated.
+- Business semantics are approved before API/data choices.
+- Frontend and backend contracts reference the technical design.
+- Every implementation slice has owner, reviewer, and stable IDs.
 
 ## Anti-Patterns
 
-- ❌ Writing contracts in `.handoffs/` instead of `docs/specs/`
-- ❌ Over-specifying implementation details (that's for Code phase)
-- ❌ Ignoring existing ADRs
-- ❌ Writing contracts in a different doc per code phase (update the single contract)
-- ❌ Skipping user review for complex features
+- Writing business or technical decisions into the evidence pack.
+- Treating screenshot-only input as implementation-ready.
+- Inventing permissions, API semantics, or database behavior from visual layout.
+- Starting implementation without approved upstream artifact layers.

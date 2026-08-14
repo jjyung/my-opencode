@@ -1,188 +1,126 @@
 ---
 name: dev-flow
 description: |
-  Contract-first development workflow: contract → code → verify → fix (loop).
-  Drives development from persistent specifications, enabling parallel frontend/backend work.
+  Evidence-first development workflow: design evidence → business requirements → technical design → role contracts → sliced code → review → verify.
   Use PROACTIVELY when implementing features, fixing bugs, refactoring, or making code changes.
-  Triggers on: "implement", "feature", "fix bug", "refactor", "add", "change", "build"
+  Triggers on: "implement", "feature", "fix bug", "refactor", "add", "change", "build", "Figma", "screenshot"
 ---
 
-# Development Flow
+# Evidence-First Development Flow
 
-Contract-first development workflow. Writes persistent specifications before coding, so frontend and backend can work in parallel from the same contract.
-
-## When to Use
-
-- Implementing a new feature
-- Fixing a bug
-- Refactoring existing code
-- Making any non-trivial code change
+The persistent feature artifact is the source of truth. Visual input becomes evidence first; business and technical decisions are made in separate layers; implementation is split into reviewable slices.
 
 ## Phase Overview
 
-```
-[Phase 0: Architecture — ADR (optional)]
-        │
-        v
-Phase 1: Contract ──→ docs/specs/<feature>/ (persistent, committed)
-        │               Frontend & Backend can start in parallel
-        v
-Phase 2: Code
-        │
-        v
-Phase 3: Verify ──→ against acceptance criteria from Phase 1
-        │
-        v
-     [Fix loop] → back to Phase 2 (max 3 retries)
+```text
+Feature Intake
+    │
+    ▼
+Design Evidence ──► Business Requirements (SA) ──► Technical Design (SD)
+                                                        │
+                                                        ▼
+                                      Frontend / Backend Contracts
+                                                        │
+                                                        ▼
+                              Sliced Implementation + Review + Tests
+                                                        │
+                                                        ▼
+                                      QA / Verification + Fix Loop
 ```
 
 ## Phase 0: Architecture (Optional)
 
-**When:** An architectural decision needs recording (tech choice, structural change, cross-team impact).
+Use `architect` before technical design when a choice has long-term impact, meaningful alternatives, or cross-team consequences. Record the decision in `docs/adr/` and reference it from the feature artifacts.
 
-**Output:** `docs/adr/NNNN-title.md` — Architecture Decision Record
+## Phase 1: Feature Intake and Design Evidence
 
-**Agent:** architect
+When a feature has Figma, screenshot, wireframe, prototype, or other UI/UX input:
 
-See `skills/adr/SKILL.md` for ADR workflow and template.
+1. Delegate to `design-evidence`.
+2. Create `docs/specs/<feature>/README.md` with feature ID, source/version, viewport, approval status, scope, owner, and status.
+3. Create `evidence-pack.md` with stable `EVID-*` entries.
+4. Separate `observed`, `inferred`, and `unknown`; attach source and confidence to every entry.
+5. Mark screenshot-only or wireframe-only input as `prototype`.
 
-→ Then proceed to Phase 1 with the ADR as architectural context.
+For features without design input, record `Design Evidence: not applicable` and explain why.
 
-## Phase 1: Contract
+## Phase 2: Business Requirements (SA)
 
-**Goal:** Produce a persistent specification that records consensus and enables parallel implementation.
+Delegate to `business-analyst` after the evidence pack is complete. Write `business-requirements.md` containing:
 
-**Output (persistent, committed to repo):**
+- Problem, goal, actor, user role, use case, scope, and out of scope.
+- `BR-*` business requirements and `BUS-*` business rules.
+- Business states, transitions, preconditions, negative paths, and duplicate/retry behavior.
+- Business data dictionary and sensitivity.
+- `AC-*` acceptance intent.
+
+Every business item MUST reference relevant `EVID-*` IDs. SA defines what the system must do; it does not choose API paths or database structures.
+
+## Phase 3: Technical Design (SD)
+
+Delegate to `system-designer` after business requirements are approved. Write:
+
+- `technical-design.md`: boundaries, API operations, schemas, errors, auth, authorization, data, query, performance, audit, observability, migration, rollback, and compatibility.
+- `frontend-contract.md`: routes, components, client state, API mapping, UI states, responsive behavior, accessibility, and visual acceptance.
+- `backend-contract.md`: operations, validation, domain logic, persistence, query, authorization, integrations, observability, and test requirements.
+
+Assign `API-*`, `DATA-*`, `NFR-*`, and `VER-*` IDs. Technical design MUST preserve SA business semantics and reference upstream IDs.
+
+## Phase 4: Sliced Implementation
+
+The `team-lead` splits work by screen, component, service, or upstream group. Every slice has:
+
+- One owner (`frontend-dev` or `backend-dev`)
+- One reviewer (`code-reviewer` or designated domain reviewer)
+- Requirement, API/data, and verification IDs
+- A bounded file and behavior scope
+
+Frontend and backend slices may run in parallel after their contracts are ready. If implementation changes business semantics, API shape, or technical constraints, update the correct persistent artifact before changing code.
+
+Use `test-engineer` to generate missing unit, integration, contract, UI, permission, and performance tests.
+
+## Phase 5: Review and Verification
+
+Run `code-reviewer` per slice, then `verifier` as the independent QA owner. Verification covers:
+
+1. Business: use cases, rules, states, and acceptance intent.
+2. Visual/Interaction: approved design, states, responsive behavior, keyboard/focus, and accessibility.
+3. API/Data: schemas, error behavior, persistence, query patterns, and contract tests.
+4. Security/Operations: authorization, scope, audit, performance, observability, and rollback.
+5. Lint, typecheck, tests, and build.
+
+The verifier returns `VER-*` results and blocked mappings. `team-lead` persists the final verification report in the feature artifact.
+
+## Traceability Gate
+
+Maintain `traceability.md` with at least:
+
+```text
+UI action → EVID-* → BR-* / BUS-* → API-* / DATA-* → AC-* / VER-*
 ```
-docs/specs/<feature>/
-├── README.md       # Requirements, ACs, API contract, data model
-├── api-spec.yaml   # OpenAPI spec (if applicable)
-└── data-model.md   # Schema definitions (if applicable)
-```
 
-### Steps
-1. **Analyze** — Read relevant files, existing ADRs, understand context
-2. **Check ADRs** — Are there existing ADRs that constrain this feature? Reference them.
-3. **Specify** — Write the contract document:
-   - Functional requirements (RFC 2119: MUST/SHOULD/MAY)
-   - Acceptance criteria (GIVEN/WHEN/THEN)
-   - API contract (endpoints, request/response schemas)
-   - Data model (entities, fields, types, constraints)
-   - Out of scope (explicit exclusions)
-4. **Review** — Present contract to user for approval
-
-### Contract Document Template
-```markdown
-# Feature: <title>
-
-## Requirements
-FR-1: System MUST <behavior>
-
-## Acceptance Criteria
-- GIVEN <context> WHEN <action> THEN <result>
-
-## API Contract
-POST /api/xxx
-Request: { field: type }
-Response: { field: type }
-
-## Data Model
-| Entity | Field | Type | Constraints |
-
-## Out of Scope
-- <explicit exclusions>
-
-## Architecture
-References: ADR-001, ADR-003
-```
-
-### Agent: spec-writer
-- Tools: Read, Grep, Glob, Bash, Write, Edit
-- Writes to `docs/specs/<feature>/`, NOT to `.handoffs/`
-
-See `references/contract-phase.md` for detailed contract workflow.
-
-## Phase 2: Code
-
-**Goal:** Implement the contract. Frontend and backend can proceed independently.
-
-### Steps
-1. **Read contract** — Load `docs/specs/<feature>/README.md` and referenced ADRs
-2. **Implement** — Write code following the contract and project conventions
-3. **Self-review** — Verify code matches the contract before moving on
-
-### Key Principle
-The contract in `docs/specs/` is the source of truth. If implementation reveals
-issues with the contract, update the contract first, then code.
-
-### Handoff (`.handoffs/dev-flow/code.md`)
-Lightweight — references contract rather than duplicating it:
-- Files changed
-- Deviations from contract (with rationale)
-- Pending items
-
-### Agent: executor
-- Tools: Read, Write, Edit, Bash, Grep, Glob
-- Full read/write access
-
-See `references/code-phase.md` for detailed coding workflow.
-
-## Phase 3: Verify
-
-**Goal:** Verify implementation against the acceptance criteria from Phase 1.
-
-### Steps
-1. **Lint** — Run linter
-2. **Typecheck** — Run type checker if applicable
-3. **Test** — Run tests, verify acceptance criteria are met
-4. **Build** — Verify project builds
-
-If any step fails → enter fix loop (back to Phase 2).
-
-### Handoff (`.handoffs/dev-flow/verify.md`)
-- Lint/typecheck/test/build results
-- Acceptance criteria pass/fail from contract
-- Final verdict: pass / needs fix
-
-### Agent: verifier
-- Tools: Read, Grep, Glob, Bash
-- Read-only + execute tests
-
-See `references/verify-phase.md` for detailed verification workflow.
+An unmapped UI action, requirement, API, or verification item is a specification gap, not a reason to guess.
 
 ## Fix Loop
 
-If verification fails:
-1. Read contract and verification output to understand failures
-2. Fix issues (Phase 2)
-3. Re-verify (Phase 3)
-4. Max 3 iterations
+If review or verification fails:
 
-## Quick Start
+1. Identify the failing ID and owning layer.
+2. Update the relevant artifact when the contract is wrong.
+3. Fix the implementation in a bounded slice.
+4. Re-run review and verification.
 
-**Simple change (≤3 files, well-understood):**
-```
-Phase 0: Skip (no ADR needed)
-Phase 1: Quick contract → Phase 2: Code → Phase 3: Verify
-```
-
-**Complex change (new feature, architectural impact):**
-```
-Phase 0: ADR first → Phase 1: Full contract with user review
-→ Phase 2: Code (frontend + backend parallel) → Phase 3: Verify
-```
+Allow at most three fix attempts before reporting the blocker.
 
 ## Artifact Summary
 
-| Artifact | Location | Persistent | Purpose |
-|----------|----------|------------|---------|
-| ADR | `docs/adr/NNNN-title.md` | ✅ Committed | Architecture decisions |
-| Contract | `docs/specs/<feature>/` | ✅ Committed | Requirements, ACs, API contract |
-| Code handoff | `.handoffs/dev-flow/code.md` | ❌ Temporary | Implementation notes |
-| Verify report | `.handoffs/dev-flow/verify.md` | ❌ Temporary | Verification results |
-
-## Related Skills
-
-- `adr` — Architecture Decision Records (Phase 0)
-- `test-gen` — Generate tests from acceptance criteria
-- `pr-review` — Review code against the contract
+| Artifact | Location | Owner | Persistence |
+|---|---|---|---|
+| Feature intake | `docs/specs/<feature>/README.md` | team-lead | committed |
+| Design evidence | `docs/specs/<feature>/evidence-pack.md` | design-evidence | committed |
+| Business requirements | `docs/specs/<feature>/business-requirements.md` | business-analyst | committed |
+| Technical design | `docs/specs/<feature>/technical-design.md` | system-designer | committed |
+| Role contracts | `docs/specs/<feature>/frontend-contract.md`, `backend-contract.md` | system-designer | committed |
+| Traceability | `docs/specs/<feature>/traceability.md` | team-lead | committed |
+| Verification report | `docs/specs/<feature>/verification-report.md` | team-lead | committed |
+| Session handoff | `.handoffs/` | current agent | temporary |

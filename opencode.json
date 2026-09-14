@@ -1,7 +1,29 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode-go/deepseek-v4-pro",
+  "model": "opencode-go/deepseek-v4.1-flash",
   "small_model": "opencode-go/deepseek-v4-flash",
+  "provider": {
+    "opencode-go": {
+      "models": {
+        "deepseek-v4.1-flash": {
+          "options": {
+            "reasoningEffort": "max"
+          },
+          "variants": {
+            "low": {
+              "reasoningEffort": "low"
+            },
+            "high": {
+              "reasoningEffort": "high"
+            },
+            "max": {
+              "reasoningEffort": "max"
+            }
+          }
+        }
+      }
+    }
+  },
   "default_agent": "team-lead",
   "instructions": [
     "skills/adr/SKILL.md",
@@ -33,7 +55,7 @@
     "design-evidence": {
       "description": "Extract source-backed Design Evidence Packs from Figma, screenshots, wireframes, and prototypes.",
       "mode": "subagent",
-      "model": "opencode-go/deepseek-v4-pro",
+      "model": "opencode-go/deepseek-v4.1-flash",
       "prompt": "{file:agents/design-evidence.md}",
       "tools": {
         "read": true,
@@ -45,7 +67,7 @@
     "business-analyst": {
       "description": "SA role: translate evidence into business requirements, rules, states, data meaning, and acceptance intent.",
       "mode": "subagent",
-      "model": "opencode-go/deepseek-v4-pro",
+      "model": "opencode-go/deepseek-v4.1-flash",
       "prompt": "{file:agents/business-analyst.md}",
       "tools": {
         "read": true,
@@ -57,7 +79,7 @@
     "system-designer": {
       "description": "SD role: translate business requirements into technical, API, data, security, and operational contracts.",
       "mode": "subagent",
-      "model": "opencode-go/deepseek-v4-pro",
+      "model": "opencode-go/deepseek-v4.1-flash",
       "prompt": "{file:agents/system-designer.md}",
       "tools": {
         "read": true,
@@ -103,7 +125,7 @@
     "code-reviewer": {
       "description": "Systematic code review across correctness, security, quality, testing, and style dimensions.",
       "mode": "subagent",
-      "model": "opencode-go/deepseek-v4-pro",
+      "model": "opencode-go/deepseek-v4.1-flash",
       "prompt": "{file:agents/code-reviewer.md}",
       "tools": {
         "read": true,
@@ -137,7 +159,7 @@
     "architect": {
       "description": "Capture architecture decisions as ADR documents. Analyzes tradeoffs and records context.",
       "mode": "subagent",
-      "model": "opencode-go/deepseek-v4-pro",
+      "model": "opencode-go/deepseek-v4.1-flash",
       "prompt": "{file:agents/architect.md}",
       "tools": {
         "read": true,

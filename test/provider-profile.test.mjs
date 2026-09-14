@@ -17,9 +17,9 @@ const ENV_KEY = "OPENCODE_PROVIDER_PROFILE";
 
 const EXPECTED = {
   opencode: {
-    model: "opencode-go/deepseek-v4-pro",
+    model: "opencode-go/deepseek-v4.1-flash",
     small_model: "opencode-go/deepseek-v4-flash",
-    heavy_model: "opencode-go/deepseek-v4-pro",
+    heavy_model: "opencode-go/deepseek-v4.1-flash",
   },
   openai: {
     model: "openai/gpt-5.6",
@@ -136,10 +136,10 @@ describe("T-3 agent_overrides mapping", () => {
 // ── T-4: buildProfileConfig output shape ────────────────────────────────────
 
 describe("T-4 buildProfileConfig output shape", () => {
-  test("T-4.1 opencode has no provider key and 7 overridden agents", () => {
+  test("T-4.1 opencode has provider.opencode-go deepseek-v4.1-flash and 7 overridden agents", () => {
     const config = buildProfileConfig({ profile: "opencode" });
     assert.equal(config.model, EXPECTED.opencode.model);
-    assert.equal("provider" in config, false);
+    assert.ok(config.provider["opencode-go"].models["deepseek-v4.1-flash"]);
     assert.deepEqual(Object.keys(config.agent).sort(), [
       "architect",
       "business-analyst",
@@ -196,11 +196,25 @@ describe("T-5 reasoning effort variants", () => {
     });
   });
 
-  test("T-5.4 no provider fragment when profile has no reasoning", () => {
-    const opencode = buildProfileConfig({ profile: "opencode" });
+  test("T-5.4 google profile has no provider fragment", () => {
     const google = buildProfileConfig({ profile: "google" });
-    assert.equal("provider" in opencode, false);
     assert.equal("provider" in google, false);
+  });
+
+  test("T-5.5 opencode deepseek-v4.1-flash variants = low/high/max with reasoningEffort", () => {
+    const config = buildProfileConfig({ profile: "opencode" });
+    const variants = config.provider["opencode-go"].models["deepseek-v4.1-flash"].variants;
+    assert.deepEqual(variants, {
+      low: { reasoningEffort: "low" },
+      high: { reasoningEffort: "high" },
+      max: { reasoningEffort: "max" },
+    });
+  });
+
+  test("T-5.6 opencode deepseek-v4.1-flash default effort is max", () => {
+    const config = buildProfileConfig({ profile: "opencode" });
+    const options = config.provider["opencode-go"].models["deepseek-v4.1-flash"].options;
+    assert.deepEqual(options, { reasoningEffort: "max" });
   });
 });
 

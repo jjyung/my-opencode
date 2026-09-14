@@ -34,7 +34,7 @@
 
 | ID | Profile | model | small_model | heavy（4 agents） |
 |----|---------|-------|-------------|-------------------|
-| T-2.1 | opencode | `opencode-go/deepseek-v4-pro` | `opencode-go/deepseek-v4-flash` | `opencode-go/deepseek-v4-pro` |
+| T-2.1 | opencode | `opencode-go/deepseek-v4.1-flash` | `opencode-go/deepseek-v4-flash` | `opencode-go/deepseek-v4.1-flash` |
 | T-2.2 | openai | `openai/gpt-5.6` | `openai/gpt-5.6-luna` | `openai/gpt-5.6` |
 | T-2.3 | google | `google/gemini-3.1-pro-preview-customtools` | `google/gemini-3.5-flash` | `google/gemini-3.1-pro-preview-customtools` |
 | T-2.4 | copilot | `github-copilot/gpt-5.6-sol` | `github-copilot/gpt-5.6-luna` | `github-copilot/gpt-5.6-sol` |
@@ -50,7 +50,7 @@
 
 | ID | Profile | THEN |
 |----|---------|------|
-| T-4.1 | opencode | 無 `provider` key；`agent` 含 5 個 overridden agents |
+| T-4.1 | opencode | 有 `provider.opencode-go.models["deepseek-v4.1-flash"]`；`agent` 含 7 個 overridden agents |
 | T-4.2 | google | 無 `provider` key（無 reasoning 設定） |
 | T-4.3 | openai | 有 `provider.openai.models["gpt-5.6-luna"]` |
 | T-4.4 | copilot | 有 `provider.github-copilot.models["gpt-5.6-luna"]` |
@@ -62,7 +62,9 @@
 | T-5.1 | openai 的 luna variants 含 `high` / `medium` / `low`，各對應 `{ reasoningEffort: <同名> }` |
 | T-5.2 | openai 的 luna `options.reasoningEffort` = `low`（預設） |
 | T-5.3 | copilot 的 luna variants 結構同 openai |
-| T-5.4 | 無 `default_effort` 時，`options` 不存在（或無 reasoning 時整段 provider 不存在） |
+| T-5.4 | 無 reasoning 設定的 profile（google）沒有 `provider` key |
+| T-5.5 | opencode 的 `deepseek-v4.1-flash` variants 含 `low` / `high` / `max`，各對應 `{ reasoningEffort: <同名> }` |
+| T-5.6 | opencode 的 `deepseek-v4.1-flash` `options.reasoningEffort` = `max`（預設） |
 
 ### T-6：錯誤處理
 

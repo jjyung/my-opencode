@@ -8,9 +8,15 @@ const CONFIG_PATH = path.resolve(__dirname, "..", "opencode.json");
 
 const PROFILE_MAP = Object.freeze({
   opencode: Object.freeze({
-    model: "opencode-go/deepseek-v4-pro",
+    model: "opencode-go/deepseek-v4.1-flash",
     small_model: "opencode-go/deepseek-v4-flash",
-    heavy_model: "opencode-go/deepseek-v4-pro",
+    heavy_model: "opencode-go/deepseek-v4.1-flash",
+    reasoning: Object.freeze({
+      "opencode-go/deepseek-v4.1-flash": Object.freeze({
+        default_effort: "max",
+        efforts: ["low", "high", "max"],
+      }),
+    }),
   }),
   openai: Object.freeze({
     model: "openai/gpt-5.6",
@@ -111,7 +117,8 @@ export function buildProfileConfig(options = {}) {
 
 /**
  * Build the `provider` config fragment for models that need reasoning-effort
- * variants (e.g. gpt-5.6-luna with high/medium/low effort switching).
+ * variants (e.g. gpt-5.6-luna with high/medium/low effort switching, or
+ * deepseek-v4.1-flash with low/high/max effort switching).
  *
  * Output shape (merged into opencode config via OPENCODE_CONFIG_CONTENT):
  *   provider.openai.models["gpt-5.6-luna"] = {

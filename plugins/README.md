@@ -11,7 +11,7 @@ opencode plugin 是透過 `opencode.json` 的 `plugin` 區塊註冊的 npm 或�
 - 預設 profile：`opencode`
 - 支援：`opencode`、`openai`、`copilot`、`anthropic`
 - 讀取：`OPENCODE_PROVIDER_PROFILE`
-- 可透過 plugin tuple options 覆寫：`["plugins/provider-profile.mjs", { "profile": "openai" }]`
+- 可透過 plugin tuple options 覆寫：`["./plugins/provider-profile.mjs", { "profile": "openai" }]`
 
 | Profile | Primary / heavy | Small / verifier |
 |---------|------------------|------------------|

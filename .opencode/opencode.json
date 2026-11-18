@@ -35,7 +35,7 @@
     "skills/design-evidence/SKILL.md"
   ],
   "plugin": [
-    "plugins/provider-profile.mjs"
+    "./plugins/provider-profile.mjs"
   ],
   "agent": {
     "team-lead": {

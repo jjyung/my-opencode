@@ -133,7 +133,7 @@ opencode
 ```json
 {
   "plugin": [
-    ["plugins/provider-profile.mjs", { "profile": "openai" }]
+    ["./plugins/provider-profile.mjs", { "profile": "openai" }]
   ]
 }
 ```

@@ -104,6 +104,19 @@
 |----|------|
 | T-9.1 | `plugins/provider-profile.mjs` 與 `.opencode/plugins/provider-profile.mjs` 內容完全一致 |
 
+### T-10：plugin 路徑解析（opencode.json）
+
+opencode 會把 `plugins/x.mjs` 這種普通相對路徑當成 npm 套件規格（會去執行 `git`/`npm install`，失敗時出現 `Plugin failed to load`）。
+本地檔案必須寫成 `./plugins/x.mjs`，其路徑相對於**設定檔所在目錄**（即 `.opencode/`）。
+
+| ID | GIVEN | THEN |
+|----|-------|------|
+| T-10.1 | 根目錄 `opencode.json` 的 `plugin` 陣列 | 含 `./plugins/provider-profile.mjs`，且不含不以 `./` 開頭的 `plugins/...` 路徑 |
+| T-10.2 | `.opencode/opencode.json` 的 `plugin` 陣列 | 與根目錄 `opencode.json` 完全相同（mirror 一致） |
+| T-10.3 | 以 `.opencode/opencode.json` 為基準解析 `./plugins/provider-profile.mjs` | 解析結果 `.opencode/plugins/provider-profile.mjs` 存在 |
+
+（發現紀錄：2026-11-18，lighthouse 專案 `plugins/provider-profile.mjs` 載入失敗，ref `err_ccd4bf54`。）
+
 ## Out of Scope（明確排除）
 
 - ❌ 真實 opencode 啟動與 config 載入（需 opencode binary + 已登入 provider）

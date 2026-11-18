@@ -27,56 +27,67 @@
 |----|-------|------|------|
 | T-1.1 | 無 option、無 `OPENCODE_PROVIDER_PROFILE` | `resolveProfile()` | active profile = `opencode`（預設） |
 | T-1.2 | option `{ profile: "openai" }` + env = `copilot` | `resolveProfile({ profile: "openai" })` | option 優先 → `openai` |
-| T-1.3 | 無 option + env = `google` | `resolveProfile()` | 採用 env → `google` |
+| T-1.3 | 無 option + env = `anthropic` | `resolveProfile()` | 採用 env → `anthropic` |
 | T-1.4 | option `{ profile: " openai " }`（含空白） | `resolveProfile({ profile: " openai " })` | trim 後 → `openai` |
 
 ### T-2：各 profile 的 model 對應（resolveProfile）
 
 | ID | Profile | model | small_model | heavy（4 agents） |
 |----|---------|-------|-------------|-------------------|
-| T-2.1 | opencode | `opencode-go/deepseek-v4.1-flash` | `opencode-go/deepseek-v4-flash` | `opencode-go/deepseek-v4.1-flash` |
-| T-2.2 | openai | `openai/gpt-5.6` | `openai/gpt-5.6-luna` | `openai/gpt-5.6` |
-| T-2.3 | google | `google/gemini-3.1-pro-preview-customtools` | `google/gemini-3.5-flash` | `google/gemini-3.1-pro-preview-customtools` |
-| T-2.4 | copilot | `github-copilot/gpt-5.6-sol` | `github-copilot/gpt-5.6-luna` | `github-copilot/gpt-5.6-sol` |
+| T-2.1 | opencode | `opencode-go/gpt-6-luna#max` | `opencode-go/deepseek-v4.1-flash#max` | `opencode-go/claude-haiku-5-5#max` |
+| T-2.2 | openai | `openai/gpt-6.2-sol#low` | `openai/gpt-6.1-terra#medium` | `openai/gpt-6.2-sol#medium` |
+| T-2.3 | ~~google~~ | 已移除（Gemini profile 於 2026-11 移除，見下方「移除紀錄」） |
+| T-2.4 | copilot | `github-copilot/claude-haiku-5.5#xhigh` | `github-copilot/gpt-6-luna#max` | `github-copilot/gpt-6.1-sol#medium` |
+| T-2.5 | anthropic | `anthropic/claude-haiku-5-5#max` | `anthropic/claude-haiku-5-5#high` | `anthropic/claude-sonnet-5-5#high` |
+
+> `#<variant>` 為 opencode 的 `provider/model#variant` 語法（effort 指定）；anthropic 的 haiku 同時需要 `max` 與 `high`，故以 variant 區分，而非 provider 預設值。
 
 ### T-3：agent_overrides 對應
 
 | ID | GIVEN | THEN |
 |----|-------|------|
-| T-3.1 | 任意 profile 的 `resolveProfile` | `spec-writer`、`code-reviewer`、`team-lead`、`architect` 皆 = `heavy_model` |
-| T-3.2 | 任意 profile 的 `resolveProfile` | `verifier` = `small_model` |
+| T-3.1 | 任意 profile 的 `resolveProfile` | `design-evidence`、`business-analyst`、`system-designer`、`code-reviewer`、`team-lead`、`architect` 皆 = `heavy_model`（含 variant） |
+| T-3.2 | 任意 profile 的 `resolveProfile` | `verifier` = `small_model`（含 variant） |
+| T-3.3 | anthropic | heavy agents = `anthropic/claude-sonnet-5-5#high`（最高） |
+| T-3.4 | anthropic | `verifier` = `anthropic/claude-haiku-5-5#high`（最低） |
+| T-3.5 | opencode | heavy agents = `opencode-go/claude-haiku-5-5#max`；`verifier` = `opencode-go/deepseek-v4.1-flash#max` |
 
 ### T-4：buildProfileConfig 輸出結構
 
 | ID | Profile | THEN |
 |----|---------|------|
-| T-4.1 | opencode | 有 `provider.opencode-go.models["deepseek-v4.1-flash"]`；`agent` 含 7 個 overridden agents |
-| T-4.2 | google | 無 `provider` key（無 reasoning 設定） |
-| T-4.3 | openai | 有 `provider.openai.models["gpt-5.6-luna"]` |
-| T-4.4 | copilot | 有 `provider.github-copilot.models["gpt-5.6-luna"]` |
+| T-4.1 | opencode | 有 `provider.opencode-go.models["deepseek-v4.1-flash"]`；`model` = `opencode-go/gpt-6-luna#max`；`agent` 含 7 個 overridden agents |
+| T-4.6 | opencode | `provider.opencode-go.models` 不含 `gpt-6-luna` / `claude-haiku-5-5`（其 variant 由 opencode 內建 catalog 提供） |
+| T-4.2 | ~~google~~ | 已移除 |
+| T-4.3 | openai | 無 `provider` key（variant 由 opencode 內建 catalog 提供）；`model` / `small_model` 含 `#variant`；`agent` 含 7 個 overridden agents |
+| T-4.4 | copilot | 無 `provider` key（variant 由 opencode 內建 catalog 提供）；`model` / `small_model` 含 `#variant`；`agent` 含 7 個 overridden agents |
+| T-4.5 | anthropic | 無 `provider` key（variant 由 opencode 內建 catalog 提供）；`model` / `small_model` 含 `#variant`；`agent` 含 7 個 overridden agents |
 
 ### T-5：reasoning effort variants 結構
 
 | ID | THEN |
 |----|------|
-| T-5.1 | openai 的 luna variants 含 `high` / `medium` / `low`，各對應 `{ reasoningEffort: <同名> }` |
-| T-5.2 | openai 的 luna `options.reasoningEffort` = `low`（預設） |
-| T-5.3 | copilot 的 luna variants 結構同 openai |
-| T-5.4 | 無 reasoning 設定的 profile（google）沒有 `provider` key |
+| T-5.1 | openai 的 `model` 為 `openai/gpt-6.2-sol#low`，`heavy_model` 為 `openai/gpt-6.2-sol#medium`，`small_model` 為 `openai/gpt-6.1-terra#medium`（variant 皆由 catalog 提供，無 provider 覆寫） |
+| T-5.2 | openai 不再引用 `gpt-5.6-luna`；config 中不含 `gpt-5.6` 字樣 |
+| T-5.3 | copilot 的 `model` 為 `github-copilot/claude-haiku-5.5#xhigh`，`heavy_model` 為 `github-copilot/gpt-6.1-sol#medium`，`small_model` 為 `github-copilot/gpt-6-luna#max`；config 不含 `gpt-5.6` 字樣 |
+| T-5.4 | ~~google~~ | 已移除 |
 | T-5.5 | opencode 的 `deepseek-v4.1-flash` variants 含 `low` / `high` / `max`，各對應 `{ reasoningEffort: <同名> }` |
 | T-5.6 | opencode 的 `deepseek-v4.1-flash` `options.reasoningEffort` = `max`（預設） |
+| T-5.7 | anthropic 的 `model` 為 `anthropic/claude-haiku-5-5#max`，`small_model` 為 `anthropic/claude-haiku-5-5#high`（`#` 後綴即 variant） |
+| T-5.8 | ~~無 variant 的 profile（google）~~ | 已移除（現存所有 profile 皆使用 variant） |
+| T-5.9 | opencode 的 `small_model` 為 `opencode-go/deepseek-v4.1-flash#max`；team-lead（heavy）為 `opencode-go/claude-haiku-5-5#max`；不再引用已下架的 `opencode-go/deepseek-v4-flash` |
 
 ### T-6：錯誤處理
 
 | ID | GIVEN | WHEN | THEN |
 |----|-------|------|------|
-| T-6.1 | 未知 profile | `resolveProfile({ profile: "bogus" })` | 拋錯，訊息含 `"Must be one of: opencode, openai, google, copilot"` |
+| T-6.1 | 未知 profile | `resolveProfile({ profile: "bogus" })` | 拋錯，訊息含 `"Must be one of: opencode, openai, copilot, anthropic"` |
 
 ### T-7：readPluginOptions
 
 | ID | GIVEN | WHEN | THEN |
 |----|-------|------|------|
-| T-7.1 | 暫存 config 含 tuple plugin `[".../provider-profile.mjs", { "profile": "google" }]` | `readPluginOptions(tmpPath)` | 回傳 `{ profile: "google" }` |
+| T-7.1 | 暫存 config 含 tuple plugin `[".../provider-profile.mjs", { "profile": "openai" }]` | `readPluginOptions(tmpPath)` | 回傳 `{ profile: "openai" }` |
 | T-7.2 | 暫存 config 無 provider-profile plugin | `readPluginOptions(tmpPath)` | 回傳 `{}` |
 | T-7.3 | 暫存 config 為非法 JSON | `readPluginOptions(tmpPath)` | 回傳 `{}`（不拋錯） |
 | T-7.4 | configPath 不存在 | `readPluginOptions(missingPath)` | 回傳 `{}`（不拋錯） |
@@ -106,3 +117,10 @@
 npm test
 # 等價於 node --test test/
 ```
+
+## 移除紀錄
+
+- **2026-11-18**：移除 `google` profile（Gemini）。原因：目前 opencode 的 Google API 金鑰回報 `API key not valid`，無法使用。
+  - 受影響案例：T-1.3（改用 anthropic）、T-2.3、T-4.2、T-5.4、T-5.8（已移除）、T-6.1（訊息更新）、T-7.1（改用 openai）。
+  - 同步移除：`bin/moc`、`bin/moc.js`、`bin/cli.js` 說明、`scripts/validate-role-flow.mjs`（改用 openai 驗證）、README 與 plugins/README。
+  - 歷史 spec（`docs/specs/google-profile-model-refresh/` 等）保留為決策紀錄，不改寫。

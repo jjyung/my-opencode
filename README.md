@@ -62,7 +62,6 @@ npm link    # 將 bin/moc 註冊到 PATH，讓 moc 指令全域可用
 ```bash
 moc               # 預設 opencode profile
 moc openai        # 切到 OpenAI profile
-moc google        # 切到 Google profile
 moc copilot       # 切到 Copilot profile
 moc --help        # 透明轉發到 opencode --help
 ```
@@ -80,20 +79,27 @@ npx my-opencode help    # 顯示說明
 
 內建 `provider-profile` plugin / resolver，主要透過 `moc` 切換整套模型配置。
 
-支援值：`opencode`（預設）、`openai`、`google`、`copilot`
+支援值：`opencode`（預設）、`openai`、`copilot`、`anthropic`
 
 | Profile | Primary / heavy | Small / verifier |
 |---------|------------------|------------------|
-| `opencode` | `opencode-go/deepseek-v4.1-flash` | `opencode-go/deepseek-v4-flash` |
-| `openai` | `openai/gpt-5.6` | `openai/gpt-5.6-luna` |
-| `google` | `google/gemini-3.1-pro-preview-customtools` | `google/gemini-3.5-flash` |
-| `copilot` | `github-copilot/gpt-5.6-sol` | `github-copilot/gpt-5.6-luna` |
+| `opencode` | model：`opencode-go/gpt-6-luna#max`；heavy：`opencode-go/claude-haiku-5-5#max` | `opencode-go/deepseek-v4.1-flash#max` |
+| `openai` | heavy：`openai/gpt-6.2-sol#medium`；model：`openai/gpt-6.2-sol#low` | `openai/gpt-6.1-terra#medium` |
+| `copilot` | heavy：`github-copilot/gpt-6.1-sol#medium`；model：`github-copilot/claude-haiku-5.5#xhigh` | `github-copilot/gpt-6-luna#max` |
+| `anthropic` | heavy：`anthropic/claude-sonnet-5-5#high`；default：`anthropic/claude-haiku-5-5#max` | `anthropic/claude-haiku-5-5#high` |
 
-> 💡 `opencode` profile 的 `deepseek-v4.1-flash`（primary / heavy）支援 reasoning effort 切換：
-> **low / high / max** 三檔（預設 `max`）。在 opencode 內用 `variant_cycle` 快捷鍵循環切換。
+> 💡 `anthropic` profile 以 `#variant` 指定 effort（opencode 的 `provider/model#variant` 語法）：
+> heavy agents（SA / SD / reviewer / team-lead / architect）用 `sonnet-5-5#high`（最高）；
+> 其餘 implementation agents 預設 `haiku-5-5#max`（其次）；verifier 與 title 用 `haiku-5-5#high`（最低）。
 >
-> 💡 `openai` 與 `copilot` profile 的 `gpt-5.6-luna`（verifier / 小型任務）支援 reasoning effort 切換：
-> **high / medium / low** 三檔（預設 `low`）。在 opencode 內用 `variant_cycle` 快捷鍵循環切換。
+> 💡 `opencode` profile 全部使用 `max` effort：預設 implementation agents 用 `gpt-6-luna#max`；heavy agents（SA / SD / reviewer / team-lead / architect）用 `claude-haiku-5-5#max`；verifier 與 title 用 `deepseek-v4.1-flash#max`（最輕量）。
+> `deepseek-v4.1-flash` 的 effort 可在 opencode 內用 `variant_cycle` 快捷鍵循環切換（low / high / max）。
+>
+> 💡 `openai` profile 以 `#variant` 指定 effort：heavy agents（SA / SD / reviewer / team-lead / architect）用 `gpt-6.2-sol#medium`（最高）；
+> 其餘 implementation agents 預設 `gpt-6.2-sol#low`（其次）；verifier 與 title 用 `gpt-6.1-terra#medium`（最低）。
+>
+> 💡 `copilot` profile 以 `#variant` 指定 effort：heavy agents（SA / SD / reviewer / team-lead / architect）用 `gpt-6.1-sol#medium`（最高）；
+> 其餘 implementation agents 預設 `claude-haiku-5.5#xhigh`（其次）；verifier 與 title 用 `gpt-6-luna#max`（最低）。
 
 ```bash
 # 預設 profile（opencode）
@@ -102,15 +108,15 @@ moc
 # 切到 OpenAI
 moc openai
 
-# 切到 Google
-moc google
+# 切到 Anthropic
+moc anthropic
 
 # 轉發額外參數
 moc openai --list-agents
 ```
 
 `moc` 會在目前工作目錄尋找 `.opencode/plugins/provider-profile.mjs` 與 `.opencode/opencode.json`。
-對 `opencode` / `openai` / `google` / `copilot` 這四個 profile，會把產生出的 `OPENCODE_CONFIG_CONTENT` 快取到 `.opencode/cache/provider-profile/`；只要 profile、plugin mtime、config mtime 都沒變，就直接重用快取，不再重新跑 Node。若 plugin 缺失，則會警告並回退為 plain `opencode`。
+對 `opencode` / `openai` / `copilot` / `anthropic` 這四個 profile，會把產生出的 `OPENCODE_CONFIG_CONTENT` 快取到 `.opencode/cache/provider-profile/`；只要 profile、plugin mtime、config mtime 都沒變，就直接重用快取，不再重新跑 Node。若 plugin 缺失，則會警告並回退為 plain `opencode`。
 
 若你直接用 repo 內的 `bin/moc`，仍會走既有 POSIX shell launcher；透過 npm 安裝、`npm link`、`npx` 取得的 `moc` 則會走跨平台的 `bin/moc.js`。
 
@@ -127,7 +133,7 @@ opencode
 ```json
 {
   "plugin": [
-    ["plugins/provider-profile.mjs", { "profile": "google" }]
+    ["plugins/provider-profile.mjs", { "profile": "openai" }]
   ]
 }
 ```

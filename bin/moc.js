@@ -5,8 +5,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 
-const knownProfiles = new Set(['opencode', 'openai', 'google', 'copilot']);
-const knownProfilesText = 'opencode openai google copilot';
+const knownProfiles = new Set(['opencode', 'openai', 'copilot', 'anthropic']);
+const knownProfilesText = 'opencode openai copilot anthropic';
 const signalExitCodes = {
   SIGHUP: 1,
   SIGINT: 2,
@@ -341,7 +341,13 @@ function main() {
     process.exit(0);
   }
 
-  spawnOpencode(forwardedArgs, {
+  // Profile launches always use a private server (--standalone). A background
+  // service started without this profile env would otherwise ignore it.
+  const launchArgs = forwardedArgs.includes('--standalone')
+    ? forwardedArgs
+    : ['--standalone', ...forwardedArgs];
+
+  spawnOpencode(launchArgs, {
     OPENCODE_PROVIDER_PROFILE: profile,
     OPENCODE_CONFIG_CONTENT: configContent,
   });

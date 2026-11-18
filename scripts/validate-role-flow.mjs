@@ -74,16 +74,16 @@ for (const term of ["Business Requirements", "Technical Design", "frontend-contr
 
 const plugin = spawnSync(process.execPath, [path.join(root, "plugins/provider-profile.mjs")], {
   cwd: root,
-  env: { ...process.env, OPENCODE_PROVIDER_PROFILE: "google" },
+  env: { ...process.env, OPENCODE_PROVIDER_PROFILE: "openai" },
   encoding: "utf8",
 });
 expect(plugin.status === 0, "provider profile plugin failed to execute");
 if (plugin.status === 0) {
   const output = JSON.parse(plugin.stdout);
   for (const agent of ["design-evidence", "business-analyst", "system-designer", "code-reviewer", "team-lead", "architect"]) {
-    expect(output.agent?.[agent]?.model === "google/gemini-3.1-pro-preview-customtools", `google heavy model missing for ${agent}`);
+    expect(output.agent?.[agent]?.model === "openai/gpt-6.2-sol#medium", `openai heavy model missing for ${agent}`);
   }
-  expect(output.agent?.verifier?.model === "google/gemini-3.5-flash", "google verifier model mismatch");
+  expect(output.agent?.verifier?.model === "openai/gpt-6.1-terra#medium", "openai verifier model mismatch");
 }
 
 if (process.exitCode) process.exit(process.exitCode);

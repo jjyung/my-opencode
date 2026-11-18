@@ -17,24 +17,24 @@ const ENV_KEY = "OPENCODE_PROVIDER_PROFILE";
 
 const EXPECTED = {
   opencode: {
-    model: "opencode-go/deepseek-v4.1-flash",
-    small_model: "opencode-go/deepseek-v4-flash",
-    heavy_model: "opencode-go/deepseek-v4.1-flash",
+    model: "opencode-go/gpt-6-luna#max",
+    small_model: "opencode-go/deepseek-v4.1-flash#max",
+    heavy_model: "opencode-go/claude-haiku-5-5#max",
   },
   openai: {
-    model: "openai/gpt-5.6",
-    small_model: "openai/gpt-5.6-luna",
-    heavy_model: "openai/gpt-5.6",
-  },
-  google: {
-    model: "google/gemini-3.1-pro-preview-customtools",
-    small_model: "google/gemini-3.5-flash",
-    heavy_model: "google/gemini-3.1-pro-preview-customtools",
+    model: "openai/gpt-6.2-sol#low",
+    small_model: "openai/gpt-6.1-terra#medium",
+    heavy_model: "openai/gpt-6.2-sol#medium",
   },
   copilot: {
-    model: "github-copilot/gpt-5.6-sol",
-    small_model: "github-copilot/gpt-5.6-luna",
-    heavy_model: "github-copilot/gpt-5.6-sol",
+    model: "github-copilot/claude-haiku-5.5#xhigh",
+    small_model: "github-copilot/gpt-6-luna#max",
+    heavy_model: "github-copilot/gpt-6.1-sol#medium",
+  },
+  anthropic: {
+    model: "anthropic/claude-haiku-5-5#max",
+    small_model: "anthropic/claude-haiku-5-5#high",
+    heavy_model: "anthropic/claude-sonnet-5-5#high",
   },
 };
 
@@ -87,9 +87,9 @@ describe("T-1 profile selection priority (pickProfile)", () => {
   });
 
   test("T-1.3 env var is used when no option is given", () => {
-    process.env[ENV_KEY] = "google";
+    process.env[ENV_KEY] = "anthropic";
     const resolved = resolveProfile();
-    assert.equal(resolved.model, EXPECTED.google.model);
+    assert.equal(resolved.model, EXPECTED.anthropic.model);
   });
 
   test("T-1.4 option profile is trimmed", () => {
@@ -133,12 +133,27 @@ describe("T-3 agent_overrides mapping", () => {
   }
 });
 
+describe("T-3 anthropic tiers", () => {
+  test("T-3.3 anthropic: heavy agents = sonnet-5-5#high (highest tier)", () => {
+    const resolved = resolveProfile({ profile: "anthropic" });
+    for (const agent of HEAVY_AGENTS) {
+      assert.equal(resolved.agent_overrides[agent], "anthropic/claude-sonnet-5-5#high", agent);
+    }
+  });
+
+  test("T-3.4 anthropic: verifier = haiku-5-5#high (lowest tier)", () => {
+    const resolved = resolveProfile({ profile: "anthropic" });
+    assert.equal(resolved.agent_overrides.verifier, "anthropic/claude-haiku-5-5#high");
+  });
+});
+
 // ── T-4: buildProfileConfig output shape ────────────────────────────────────
 
 describe("T-4 buildProfileConfig output shape", () => {
   test("T-4.1 opencode has provider.opencode-go deepseek-v4.1-flash and 7 overridden agents", () => {
     const config = buildProfileConfig({ profile: "opencode" });
     assert.equal(config.model, EXPECTED.opencode.model);
+    assert.equal(config.model, "opencode-go/gpt-6-luna#max");
     assert.ok(config.provider["opencode-go"].models["deepseek-v4.1-flash"]);
     assert.deepEqual(Object.keys(config.agent).sort(), [
       "architect",
@@ -151,54 +166,82 @@ describe("T-4 buildProfileConfig output shape", () => {
     ]);
   });
 
-  test("T-4.2 google has no provider key", () => {
-    const config = buildProfileConfig({ profile: "google" });
-    assert.equal("provider" in config, false);
-  });
-
-  test("T-4.3 openai has provider.openai.models['gpt-5.6-luna']", () => {
+  test("T-4.3 openai has no provider key; model/small_model carry #variant; 7 overridden agents", () => {
     const config = buildProfileConfig({ profile: "openai" });
-    assert.ok(config.provider.openai.models["gpt-5.6-luna"]);
+    assert.equal("provider" in config, false);
+    assert.equal(config.model, "openai/gpt-6.2-sol#low");
+    assert.equal(config.small_model, "openai/gpt-6.1-terra#medium");
+    assert.deepEqual(Object.keys(config.agent).sort(), [
+      "architect",
+      "business-analyst",
+      "code-reviewer",
+      "design-evidence",
+      "system-designer",
+      "team-lead",
+      "verifier",
+    ]);
   });
 
-  test("T-4.4 copilot has provider.github-copilot.models['gpt-5.6-luna']", () => {
+  test("T-4.4 copilot has no provider key; model/small_model carry #variant; 7 overridden agents", () => {
     const config = buildProfileConfig({ profile: "copilot" });
-    assert.ok(config.provider["github-copilot"].models["gpt-5.6-luna"]);
+    assert.equal("provider" in config, false);
+    assert.equal(config.model, "github-copilot/claude-haiku-5.5#xhigh");
+    assert.equal(config.small_model, "github-copilot/gpt-6-luna#max");
+    assert.deepEqual(Object.keys(config.agent).sort(), [
+      "architect",
+      "business-analyst",
+      "code-reviewer",
+      "design-evidence",
+      "system-designer",
+      "team-lead",
+      "verifier",
+    ]);
+  });
+
+  test("T-4.6 opencode provider block does not override gpt-6-luna / claude-haiku-5-5", () => {
+    const config = buildProfileConfig({ profile: "opencode" });
+    assert.equal("gpt-6-luna" in config.provider["opencode-go"].models, false);
+    assert.equal("claude-haiku-5-5" in config.provider["opencode-go"].models, false);
+  });
+
+  test("T-4.5 anthropic has no provider key; model/small_model carry #variant; 7 overridden agents", () => {
+    const config = buildProfileConfig({ profile: "anthropic" });
+    assert.equal("provider" in config, false);
+    assert.equal(config.model, "anthropic/claude-haiku-5-5#max");
+    assert.equal(config.small_model, "anthropic/claude-haiku-5-5#high");
+    assert.deepEqual(Object.keys(config.agent).sort(), [
+      "architect",
+      "business-analyst",
+      "code-reviewer",
+      "design-evidence",
+      "system-designer",
+      "team-lead",
+      "verifier",
+    ]);
   });
 });
 
 // ── T-5: reasoning effort variants structure ────────────────────────────────
 
 describe("T-5 reasoning effort variants", () => {
-  test("T-5.1 openai luna variants = high/medium/low with reasoningEffort", () => {
+  test("T-5.1 openai model = gpt-6.2-sol#low, heavy = gpt-6.2-sol#medium, small = gpt-6.1-terra#medium", () => {
+    const resolved = resolveProfile({ profile: "openai" });
+    assert.equal(resolved.model, "openai/gpt-6.2-sol#low");
+    assert.equal(resolved.small_model, "openai/gpt-6.1-terra#medium");
+    assert.equal(resolved.agent_overrides["team-lead"], "openai/gpt-6.2-sol#medium");
+  });
+
+  test("T-5.2 openai config no longer references gpt-5.6 models", () => {
     const config = buildProfileConfig({ profile: "openai" });
-    const variants = config.provider.openai.models["gpt-5.6-luna"].variants;
-    assert.deepEqual(variants, {
-      high: { reasoningEffort: "high" },
-      medium: { reasoningEffort: "medium" },
-      low: { reasoningEffort: "low" },
-    });
+    assert.equal(JSON.stringify(config).includes("gpt-5.6"), false);
   });
 
-  test("T-5.2 openai luna default effort is low", () => {
-    const config = buildProfileConfig({ profile: "openai" });
-    const options = config.provider.openai.models["gpt-5.6-luna"].options;
-    assert.deepEqual(options, { reasoningEffort: "low" });
-  });
-
-  test("T-5.3 copilot luna variants mirror openai", () => {
-    const config = buildProfileConfig({ profile: "copilot" });
-    const variants = config.provider["github-copilot"].models["gpt-5.6-luna"].variants;
-    assert.deepEqual(variants, {
-      high: { reasoningEffort: "high" },
-      medium: { reasoningEffort: "medium" },
-      low: { reasoningEffort: "low" },
-    });
-  });
-
-  test("T-5.4 google profile has no provider fragment", () => {
-    const google = buildProfileConfig({ profile: "google" });
-    assert.equal("provider" in google, false);
+  test("T-5.3 copilot model = claude-haiku-5.5#xhigh, heavy = gpt-6.1-sol#medium, small = gpt-6-luna#max", () => {
+    const resolved = resolveProfile({ profile: "copilot" });
+    assert.equal(resolved.model, "github-copilot/claude-haiku-5.5#xhigh");
+    assert.equal(resolved.small_model, "github-copilot/gpt-6-luna#max");
+    assert.equal(resolved.agent_overrides["team-lead"], "github-copilot/gpt-6.1-sol#medium");
+    assert.equal(JSON.stringify(buildProfileConfig({ profile: "copilot" })).includes("gpt-5.6"), false);
   });
 
   test("T-5.5 opencode deepseek-v4.1-flash variants = low/high/max with reasoningEffort", () => {
@@ -216,6 +259,20 @@ describe("T-5 reasoning effort variants", () => {
     const options = config.provider["opencode-go"].models["deepseek-v4.1-flash"].options;
     assert.deepEqual(options, { reasoningEffort: "max" });
   });
+
+  test("T-5.7 anthropic model uses #max and small_model uses #high variant refs", () => {
+    const resolved = resolveProfile({ profile: "anthropic" });
+    assert.equal(resolved.model, "anthropic/claude-haiku-5-5#max");
+    assert.equal(resolved.small_model, "anthropic/claude-haiku-5-5#high");
+  });
+
+  test("T-5.9 opencode small_model = deepseek-v4.1-flash#max; team-lead (heavy) = claude-haiku-5-5#max; no deprecated deepseek-v4-flash", () => {
+    const config = buildProfileConfig({ profile: "opencode" });
+    assert.equal(config.small_model, "opencode-go/deepseek-v4.1-flash#max");
+    assert.equal(config.agent.verifier.model, "opencode-go/deepseek-v4.1-flash#max");
+    assert.equal(config.agent["team-lead"].model, "opencode-go/claude-haiku-5-5#max");
+    assert.equal(JSON.stringify(config).includes("deepseek-v4-flash"), false);
+  });
 });
 
 // ── T-6: Error handling ─────────────────────────────────────────────────────
@@ -224,7 +281,7 @@ describe("T-6 error handling", () => {
   test("T-6.1 unknown profile throws with supported list", () => {
     assert.throws(
       () => resolveProfile({ profile: "bogus" }),
-      /Unknown provider profile "bogus"\. Must be one of: opencode, openai, google, copilot/,
+      /Unknown provider profile "bogus"\. Must be one of: opencode, openai, copilot, anthropic/,
     );
   });
 });
@@ -252,10 +309,10 @@ describe("T-7 readPluginOptions", () => {
     const filePath = writeConfig(
       "config.json",
       JSON.stringify({
-        plugin: [["plugins/provider-profile.mjs", { profile: "google" }]],
+        plugin: [["plugins/provider-profile.mjs", { profile: "openai" }]],
       }),
     );
-    assert.deepEqual(readPluginOptions(filePath), { profile: "google" });
+    assert.deepEqual(readPluginOptions(filePath), { profile: "openai" });
   });
 
   test("T-7.2 returns {} when no provider-profile plugin present", () => {

@@ -9,22 +9,26 @@ opencode plugin 是透過 `opencode.json` 的 `plugin` 區塊註冊的 npm 或�
 零依賴 ESM plugin / resolver，用來切換本 repo 的模型 profile。
 
 - 預設 profile：`opencode`
-- 支援：`opencode`、`openai`、`google`、`copilot`
+- 支援：`opencode`、`openai`、`copilot`、`anthropic`
 - 讀取：`OPENCODE_PROVIDER_PROFILE`
-- 可透過 plugin tuple options 覆寫：`["plugins/provider-profile.mjs", { "profile": "google" }]`
+- 可透過 plugin tuple options 覆寫：`["plugins/provider-profile.mjs", { "profile": "openai" }]`
 
 | Profile | Primary / heavy | Small / verifier |
 |---------|------------------|------------------|
-| `opencode` | `opencode-go/deepseek-v4.1-flash` | `opencode-go/deepseek-v4-flash` |
-| `openai` | `openai/gpt-5.6` | `openai/gpt-5.6-luna` |
-| `google` | `google/gemini-3.1-pro-preview-customtools` | `google/gemini-3.5-flash` |
-| `copilot` | `github-copilot/gpt-5.6-sol` | `github-copilot/gpt-5.6-luna` |
+| `opencode` | model：`opencode-go/gpt-6-luna#max`；heavy：`opencode-go/claude-haiku-5-5#max` | `opencode-go/deepseek-v4.1-flash#max` |
+| `openai` | heavy：`openai/gpt-6.2-sol#medium`；model：`openai/gpt-6.2-sol#low` | `openai/gpt-6.1-terra#medium` |
+| `copilot` | heavy：`github-copilot/gpt-6.1-sol#medium`；model：`github-copilot/claude-haiku-5.5#xhigh` | `github-copilot/gpt-6-luna#max` |
+| `anthropic` | heavy：`anthropic/claude-sonnet-5-5#high`；default：`anthropic/claude-haiku-5-5#max` | `anthropic/claude-haiku-5-5#high` |
 
-> 💡 `opencode` profile 的 `deepseek-v4.1-flash`（primary / heavy）支援 reasoning effort 切換（low / high / max，預設 `max`），
-> 在 opencode 內用 `variant_cycle` 快捷鍵循環切換。
+> 💡 `anthropic` profile 的 `#<variant>` 後綴為 opencode 的 effort 指定語法（`provider/model#variant`），
+> 同一顆 haiku 可依 agent 使用不同 effort。variant 由 opencode 內建 model catalog 提供，因此此 profile 不產生 `provider` 覆寫區塊。
+
+> 💡 `opencode` profile 全部使用 `max` effort（variant 皆由 opencode 內建 catalog 提供）：model 用 `gpt-6-luna#max`，heavy 用 `claude-haiku-5-5#max`，small 用 `deepseek-v4.1-flash#max`。
+> `deepseek-v4.1-flash` 另有 low / high / max 可在 opencode 內用 `variant_cycle` 快捷鍵循環切換。
 >
-> 💡 `openai` 與 `copilot` profile 的 `gpt-5.6-luna` 支援 reasoning effort 切換（high / medium / low，預設 `low`），
-> 在 opencode 內用 `variant_cycle` 快捷鍵循環切換。
+> 💡 `openai` profile 以 `#variant` 指定 effort（heavy `gpt-6.2-sol#medium`、model `gpt-6.2-sol#low`、small `gpt-6.1-terra#medium`；variant 由 opencode 內建 catalog 提供）。
+
+> 💡 `copilot` profile 以 `#variant` 指定 effort（heavy `gpt-6.1-sol#medium`、model `claude-haiku-5.5#xhigh`、small `gpt-6-luna#max`；variant 由 opencode 內建 catalog 提供）。
 
 ### 用法
 
@@ -33,7 +37,7 @@ opencode plugin 是透過 `opencode.json` 的 `plugin` 區塊註冊的 npm 或�
 ```bash
 moc
 moc openai
-moc google --list-agents
+moc anthropic --list-agents
 ```
 
 `moc` 會對四個已知 profile 快取 provider-profile 產生出的 JSON override，位置在 `.opencode/cache/provider-profile/`。快取是否有效由以下條件決定：

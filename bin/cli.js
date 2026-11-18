@@ -127,7 +127,7 @@ function cmdHelp() {
 \x1b[1mLAUNCHER\x1b[0m
   moc                 預設使用 opencode profile 啟動 opencode
   moc openai          使用 openai profile 啟動 opencode
-  moc google          使用 google profile 啟動 opencode
+  moc anthropic       使用 anthropic profile 啟動 opencode
   moc --help          透明轉發到 opencode --help
 
   \x1b[1mEXAMPLES\x1b[0m

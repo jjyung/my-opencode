@@ -1,7 +1,7 @@
 #!/bin/sh
 
 profile=
-known_profiles="opencode openai google copilot"
+known_profiles="opencode openai copilot anthropic"
 
 print_help() {
   cat <<'EOF'
@@ -12,14 +12,13 @@ Usage:
   moc print-config [profile]
 
 Profiles:
-  opencode | openai | google | copilot
+  opencode | openai | copilot | anthropic
 
 Examples:
   moc
-  moc google
   moc openai --list-agents
-  moc doctor google
-  moc print-config google
+  moc doctor anthropic
+  moc print-config anthropic
 
 Notes:
   - `moc` without extra args launches interactive opencode.
@@ -54,7 +53,7 @@ case "${1-}" in
   print-config)
     profile=${2-opencode}
     ;;
-  opencode|openai|google|copilot)
+  opencode|openai|copilot|anthropic)
     profile=$1
     shift
     ;;
@@ -65,7 +64,7 @@ if [ -z "$profile" ]; then
 fi
 
 case "$profile" in
-  opencode|openai|google|copilot)
+  opencode|openai|copilot|anthropic)
     ;;
   *)
     printf '%s\n' "moc: unknown profile '$profile'. Must be one of: $known_profiles" >&2
@@ -74,10 +73,19 @@ case "$profile" in
 esac
 
 exec_opencode_with_profile() {
+  # Profile launches always use a private server (--standalone). A background
+  # service started without this profile env would otherwise ignore it.
+  standalone_flag=--standalone
+  for arg in "$@"; do
+    if [ "$arg" = "--standalone" ]; then
+      standalone_flag=
+    fi
+  done
+
   exec env \
     OPENCODE_PROVIDER_PROFILE="$profile" \
     OPENCODE_CONFIG_CONTENT="$config_content" \
-    opencode "$@"
+    opencode ${standalone_flag:+"$standalone_flag"} "$@"
 }
 
 plugin_path=.opencode/plugins/provider-profile.mjs

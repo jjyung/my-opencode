@@ -7,10 +7,17 @@ const __dirname = path.dirname(__filename);
 const CONFIG_PATH = path.resolve(__dirname, "..", "opencode.json");
 
 const PROFILE_MAP = Object.freeze({
+  // opencode-go（全部 max effort）：
+  //   model  (預設 implementation agents)         → gpt-6-luna max
+  //   heavy  (SA/SD/reviewer/team-lead/architect) → claude-haiku-5-5 max
+  //   small  (verifier / title)                   → deepseek-v4.1-flash max
   opencode: Object.freeze({
-    model: "opencode-go/deepseek-v4.1-flash",
-    small_model: "opencode-go/deepseek-v4-flash",
-    heavy_model: "opencode-go/deepseek-v4.1-flash",
+    model: "opencode-go/gpt-6-luna",
+    model_variant: "max",
+    small_model: "opencode-go/deepseek-v4.1-flash",
+    small_variant: "max",
+    heavy_model: "opencode-go/claude-haiku-5-5",
+    heavy_variant: "max",
     reasoning: Object.freeze({
       "opencode-go/deepseek-v4.1-flash": Object.freeze({
         default_effort: "max",
@@ -18,32 +25,41 @@ const PROFILE_MAP = Object.freeze({
       }),
     }),
   }),
+  // OpenAI 系列：effort 透過 `provider/model#variant` 指定（opencode 內建 variant，不需 provider 覆寫）。
+  //   heavy  (SA/SD/reviewer/team-lead/architect) → gpt-6.2-sol medium （最高）
+  //   model  (預設 implementation agents)         → gpt-6.2-sol low    （其次）
+  //   small  (verifier / title)                   → gpt-6.1-terra medium（最低）
   openai: Object.freeze({
-    model: "openai/gpt-5.6",
-    small_model: "openai/gpt-5.6-luna",
-    heavy_model: "openai/gpt-5.6",
-    reasoning: Object.freeze({
-      "openai/gpt-5.6-luna": Object.freeze({
-        default_effort: "low",
-        efforts: ["high", "medium", "low"],
-      }),
-    }),
+    model: "openai/gpt-6.2-sol",
+    model_variant: "low",
+    small_model: "openai/gpt-6.1-terra",
+    small_variant: "medium",
+    heavy_model: "openai/gpt-6.2-sol",
+    heavy_variant: "medium",
   }),
-  google: Object.freeze({
-    model: "google/gemini-3.1-pro-preview-customtools",
-    small_model: "google/gemini-3.5-flash",
-    heavy_model: "google/gemini-3.1-pro-preview-customtools",
-  }),
+  // GitHub Copilot：effort 透過 `provider/model#variant` 指定（opencode 內建 variant，不需 provider 覆寫）。
+  //   heavy  (SA/SD/reviewer/team-lead/architect) → gpt-6.1-sol medium （最高）
+  //   model  (預設 implementation agents)         → claude-haiku-5.5 xhigh（其次）
+  //   small  (verifier / title)                   → gpt-6-luna max      （最低）
   copilot: Object.freeze({
-    model: "github-copilot/gpt-5.6-sol",
-    small_model: "github-copilot/gpt-5.6-luna",
-    heavy_model: "github-copilot/gpt-5.6-sol",
-    reasoning: Object.freeze({
-      "github-copilot/gpt-5.6-luna": Object.freeze({
-        default_effort: "low",
-        efforts: ["high", "medium", "low"],
-      }),
-    }),
+    model: "github-copilot/claude-haiku-5.5",
+    model_variant: "xhigh",
+    small_model: "github-copilot/gpt-6-luna",
+    small_variant: "max",
+    heavy_model: "github-copilot/gpt-6.1-sol",
+    heavy_variant: "medium",
+  }),
+  // Anthropic 系列：effort 透過 `provider/model#variant` 指定（opencode 內建 variant，不需 provider 覆寫）。
+  //   heavy  (SA/SD/reviewer/team-lead/architect) → sonnet-5-5 high   （最高）
+  //   model  (預設 implementation agents)         → haiku-5-5  max    （其次）
+  //   small  (verifier / title)                   → haiku-5-5  high   （最低）
+  anthropic: Object.freeze({
+    model: "anthropic/claude-haiku-5-5",
+    model_variant: "max",
+    small_model: "anthropic/claude-haiku-5-5",
+    small_variant: "high",
+    heavy_model: "anthropic/claude-sonnet-5-5",
+    heavy_variant: "high",
   }),
 });
 
@@ -80,21 +96,33 @@ function pickProfile(options = {}) {
   return activeProfile;
 }
 
+/**
+ * Append an optional reasoning variant to a model ref using opencode's
+ * `provider/model#variant` syntax (e.g. `anthropic/claude-haiku-5-5#max`).
+ */
+function withVariant(modelRef, variant) {
+  return variant ? `${modelRef}#${variant}` : modelRef;
+}
+
 export default function resolveProfile(options = {}) {
   const activeProfile = pickProfile(options);
   const profile = PROFILE_MAP[activeProfile];
 
+  const model = withVariant(profile.model, profile.model_variant);
+  const smallModel = withVariant(profile.small_model, profile.small_variant);
+  const heavyModel = withVariant(profile.heavy_model, profile.heavy_variant);
+
   return {
-    model: profile.model,
-    small_model: profile.small_model,
+    model,
+    small_model: smallModel,
     agent_overrides: {
-      "design-evidence": profile.heavy_model,
-      "business-analyst": profile.heavy_model,
-      "system-designer": profile.heavy_model,
-      verifier: profile.small_model,
-      "code-reviewer": profile.heavy_model,
-      "team-lead": profile.heavy_model,
-      architect: profile.heavy_model,
+      "design-evidence": heavyModel,
+      "business-analyst": heavyModel,
+      "system-designer": heavyModel,
+      verifier: smallModel,
+      "code-reviewer": heavyModel,
+      "team-lead": heavyModel,
+      architect: heavyModel,
     },
   };
 }
